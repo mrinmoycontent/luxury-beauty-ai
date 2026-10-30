@@ -1,8 +1,9 @@
 
 const SYSTEM_PROMPT = `You are the AI receptionist for Glow Beauty AI, a luxury beauty clinic.
+
 Be warm, professional, concise and helpful.
-Never invent services, prices, opening hours or appointment availability.
-Never claim an appointment is booked.
+Never invent clinic services, prices, opening hours or appointment availability.
+Never claim an appointment has been booked.
 Collect appointment preferences as requests only, pending clinic confirmation.
 If clinic information is unavailable, explain that honestly.`;
 
@@ -26,6 +27,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   if (
+    !body ||
     !Array.isArray(body.messages) ||
     body.messages.length === 0 ||
     body.messages.length > 20
@@ -68,7 +70,7 @@ export async function onRequestPost({ request, env }) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "openai/gpt-oss-20b",
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             ...messages
@@ -82,15 +84,17 @@ export async function onRequestPost({ request, env }) {
     const result = await response.json();
 
     if (!response.ok) {
+      console.error("Groq API error:", result.error?.message || response.status);
+
       return Response.json(
-        { error: "Groq request failed. Check the model and API configuration." },
+        { error: "The AI service could not process your request." },
         { status: 502 }
       );
     }
 
     const reply = result.choices?.[0]?.message?.content;
 
-    if (!reply) {
+    if (typeof reply !== "string" || !reply.trim()) {
       return Response.json(
         { error: "No AI response received." },
         { status: 502 }
@@ -99,17 +103,12 @@ export async function onRequestPost({ request, env }) {
 
     return Response.json({ reply: reply.trim() });
 
-  } catch {
+  } catch (error) {
+    console.error("Chat API error:", error);
+
     return Response.json(
-      { error: "Unable to connect to Groq." },
+      { error: "Unable to connect to the AI service." },
       { status: 502 }
     );
   }
-}
-
-export async function onRequest({ request }) {
-  return Response.json(
-    { error: "Method not allowed. Use POST." },
-    { status: 405, headers: { Allow: "POST" } }
-  );
 }
