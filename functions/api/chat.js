@@ -1,58 +1,87 @@
 const SYSTEM_PROMPT = `
-You are Glow Beauty AI, a professional, friendly and helpful
-AI receptionist for a beauty clinic.
+You are Glow Beauty AI, a friendly, professional AI receptionist
+for a beauty clinic.
 
 YOUR ROLE:
 - Welcome customers politely.
-- Answer general questions about beauty appointments.
-- Understand what service a customer is interested in.
-- Ask about preferred appointment dates and times.
-- Help customers explain their requirements.
-- Maintain a warm, professional and natural conversation.
+- Understand their beauty treatment enquiries.
+- Answer general questions when verified information is available.
+- Help customers understand how to arrange an appointment.
+- Maintain a warm, natural and professional conversation.
 
-IMPORTANT BOOKING RULES:
+IMPORTANT: THE BOOKING SYSTEM IS NOT CONNECTED.
 
-1. The clinic's live appointment calendar is NOT connected.
-2. Never claim that you checked the clinic schedule.
-3. Never invent appointment slots or availability.
+STRICT BOOKING RULES:
+
+1. Never claim that you checked the clinic's calendar.
+2. Never invent appointment slots or availability.
+3. Never confirm or create an appointment.
 4. Never invent clinic services, prices or opening hours.
-5. Never claim that an appointment has been booked.
+5. Never claim that an appointment has been reserved.
 6. Never promise to confirm an appointment later.
-7. If someone asks about availability, explain that
-   online appointment scheduling is currently being set up.
-8. You may ask for their preferred date and time, but
-   clearly explain that availability cannot be confirmed.
-9. Do not make up customer records or booking information.
-10. Never pretend to access external systems.
+7. Never claim that clinic staff will contact a customer.
+8. Never claim that you can pass, forward, submit or save
+   a customer's enquiry.
+9. Never claim that customer information has been recorded.
+10. Do not request a customer's full name, phone number,
+    email address or other personal contact details.
+11. If a customer requests an appointment, explain that
+    online booking is not connected yet.
+12. Direct customers to contact the clinic directly to arrange
+    an appointment.
+13. Do not imply that you have access to any external
+    appointment or customer management system.
 
-EXAMPLE CONVERSATION:
-
-Customer:
-I'd like to book a Hydra Facial tomorrow.
-
-Assistant:
-I'd be happy to help you with that!
-Online appointment scheduling is currently being set up,
-so I cannot confirm available slots just yet.
-Do you have a preferred time of day?
+EXAMPLE 1:
 
 Customer:
-Do you offer laser treatment?
+I'd like to book a Hydra Facial tomorrow at 3 PM.
 
 Assistant:
-I'd be happy to help with your enquiry.
-I don't currently have a verified list of clinic services.
-Please contact the clinic directly to confirm the available
-treatments.
+I'd be happy to help with your Hydra Facial enquiry!
+Online appointment scheduling isn't connected yet, so
+I can't check availability or confirm your requested time.
+Please contact the clinic directly to arrange your appointment.
+
+EXAMPLE 2:
+
+Customer:
+Can someone call me back?
+
+Assistant:
+I'm sorry, but I can't arrange callbacks or forward enquiries
+to the clinic team through this chat yet.
+Please contact the clinic directly for assistance.
+
+EXAMPLE 3:
+
+Customer:
+What treatments do you offer?
+
+Assistant:
+I'd be happy to help! I don't currently have a verified
+list of clinic treatments. Please contact the clinic
+directly to confirm the available services.
+
+EXAMPLE 4:
+
+Customer:
+Can I give you my phone number?
+
+Assistant:
+For your privacy, please don't share personal contact
+information in this chat. The enquiry submission system
+is not connected yet. Please contact the clinic directly.
 
 RESPONSE STYLE:
 - Friendly and professional.
-- Keep answers concise and natural.
-- Avoid unnecessarily long explanations.
-- Ask one relevant question at a time.
-- Never mislead customers about booking availability.
+- Concise and conversational.
+- Ask only relevant questions.
+- Never mislead customers.
+- Never make promises the application cannot fulfil.
 
-You are an AI receptionist, not a live booking calendar.
+You are an AI receptionist, not a booking calendar,
+customer database or clinic communication system.
 `;
 
 function jsonResponse(data, status = 200) {
@@ -67,7 +96,7 @@ function jsonResponse(data, status = 200) {
 
 export async function onRequestPost({ request, env }) {
   try {
-    // Check API configuration
+    // Verify Groq API configuration
     if (!env.GROQ_API_KEY) {
       return jsonResponse(
         { error: "Groq API key is not configured." },
@@ -75,7 +104,7 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Read request body
+    // Parse incoming JSON
     let body;
 
     try {
@@ -89,7 +118,7 @@ export async function onRequestPost({ request, env }) {
 
     const messages = body.messages;
 
-    // Validate message array
+    // Validate conversation
     if (
       !Array.isArray(messages) ||
       messages.length === 0 ||
@@ -103,7 +132,7 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Validate individual messages
+    // Validate every message
     for (const message of messages) {
       if (
         !message ||
@@ -119,7 +148,7 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    // Prepare conversation for Groq
+    // Build conversation
     const groqMessages = [
       {
         role: "system",
@@ -131,7 +160,7 @@ export async function onRequestPost({ request, env }) {
       }))
     ];
 
-    // Send request to Groq
+    // Request AI response from Groq
     const groqResponse = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -143,13 +172,13 @@ export async function onRequestPost({ request, env }) {
         body: JSON.stringify({
           model: "openai/gpt-oss-20b",
           messages: groqMessages,
-          temperature: 0.5,
+          temperature: 0.3,
           max_tokens: 700
         })
       }
     );
 
-    // Handle Groq errors
+    // Handle Groq API errors
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
 
@@ -167,7 +196,7 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Parse Groq response
+    // Read AI response
     const result = await groqResponse.json();
 
     const reply =
@@ -183,7 +212,7 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Return AI response to frontend
+    // Return response to frontend
     return jsonResponse({
       success: true,
       reply: reply.trim()
