@@ -1,87 +1,36 @@
 const SYSTEM_PROMPT = `
-You are Glow Beauty AI, a friendly, professional AI receptionist
-for a beauty clinic.
+You are Glow Beauty AI, a friendly and professional AI receptionist.
 
 YOUR ROLE:
-- Welcome customers politely.
-- Understand their beauty treatment enquiries.
-- Answer general questions when verified information is available.
-- Help customers understand how to arrange an appointment.
-- Maintain a warm, natural and professional conversation.
+- Welcome customers.
+- Answer general beauty-related questions.
+- Help customers understand the clinic's services when verified information exists.
+- Communicate naturally and professionally.
 
-IMPORTANT: THE BOOKING SYSTEM IS NOT CONNECTED.
+IMPORTANT SYSTEM LIMITATIONS:
+- The clinic booking calendar is NOT connected.
+- The customer enquiry database is NOT connected.
+- You cannot contact clinic employees.
+- You cannot forward, submit, record or save enquiries.
+- You cannot arrange callbacks.
+- You cannot confirm appointments.
 
-STRICT BOOKING RULES:
-
-1. Never claim that you checked the clinic's calendar.
-2. Never invent appointment slots or availability.
-3. Never confirm or create an appointment.
-4. Never invent clinic services, prices or opening hours.
-5. Never claim that an appointment has been reserved.
-6. Never promise to confirm an appointment later.
-7. Never claim that clinic staff will contact a customer.
-8. Never claim that you can pass, forward, submit or save
-   a customer's enquiry.
-9. Never claim that customer information has been recorded.
-10. Do not request a customer's full name, phone number,
-    email address or other personal contact details.
-11. If a customer requests an appointment, explain that
-    online booking is not connected yet.
-12. Direct customers to contact the clinic directly to arrange
-    an appointment.
-13. Do not imply that you have access to any external
-    appointment or customer management system.
-
-EXAMPLE 1:
-
-Customer:
-I'd like to book a Hydra Facial tomorrow at 3 PM.
-
-Assistant:
-I'd be happy to help with your Hydra Facial enquiry!
-Online appointment scheduling isn't connected yet, so
-I can't check availability or confirm your requested time.
-Please contact the clinic directly to arrange your appointment.
-
-EXAMPLE 2:
-
-Customer:
-Can someone call me back?
-
-Assistant:
-I'm sorry, but I can't arrange callbacks or forward enquiries
-to the clinic team through this chat yet.
-Please contact the clinic directly for assistance.
-
-EXAMPLE 3:
-
-Customer:
-What treatments do you offer?
-
-Assistant:
-I'd be happy to help! I don't currently have a verified
-list of clinic treatments. Please contact the clinic
-directly to confirm the available services.
-
-EXAMPLE 4:
-
-Customer:
-Can I give you my phone number?
-
-Assistant:
-For your privacy, please don't share personal contact
-information in this chat. The enquiry submission system
-is not connected yet. Please contact the clinic directly.
+STRICT RULES:
+1. Never invent appointment availability.
+2. Never confirm or reserve appointments.
+3. Never claim that an enquiry was forwarded or saved.
+4. Never promise that clinic staff will contact a customer.
+5. Never claim to have checked a calendar.
+6. Never request phone numbers, email addresses or other personal details.
+7. Never invent services, prices or opening hours.
+8. Direct customers to contact the clinic directly for booking.
+9. Never pretend to access external systems.
+10. Do not repeat customers' personal contact information.
 
 RESPONSE STYLE:
-- Friendly and professional.
-- Concise and conversational.
-- Ask only relevant questions.
-- Never mislead customers.
+- Friendly, concise and professional.
 - Never make promises the application cannot fulfil.
-
-You are an AI receptionist, not a booking calendar,
-customer database or clinic communication system.
+- Never mislead customers.
 `;
 
 function jsonResponse(data, status = 200) {
@@ -94,9 +43,46 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+// Detect email addresses.
+function containsEmail(text) {
+  return /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(text);
+}
+
+// Detect phone numbers containing at least 10 digits.
+function containsPhoneNumber(text) {
+  const matches = text.match(
+    /(?:\+?\d[\d\s().-]{7,}\d)/g
+  ) || [];
+
+  return matches.some(
+    value => value.replace(/\D/g, "").length >= 10
+  );
+}
+
+// Remove contact details before sending conversation history to Groq.
+function redactPersonalInformation(text) {
+  return text
+    .replace(
+      /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+      "[email redacted]"
+    )
+    .replace(
+      /(?:\+?\d[\d\s().-]{7,}\d)/g,
+      (value) =>
+        value.replace(/\D/g, "").length >= 10
+          ? "[phone number redacted]"
+          : value
+    );
+}
+
+// Detect appointment and booking requests.
+function isBookingRequest(text) {
+  return /\b(book|booking|appointment|appointments|reserve|reservation|reservations|availability|available slot|time slot|schedule|reschedule|cancel my appointment|confirm my appointment|confirm the booking)\b/i.test(text);
+}
+
 export async function onRequestPost({ request, env }) {
   try {
-    // Verify Groq API configuration
+    // Check Groq configuration.
     if (!env.GROQ_API_KEY) {
       return jsonResponse(
         { error: "Groq API key is not configured." },
@@ -104,7 +90,7 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Parse incoming JSON
+    // Parse request.
     let body;
 
     try {
@@ -118,21 +104,19 @@ export async function onRequestPost({ request, env }) {
 
     const messages = body.messages;
 
-    // Validate conversation
+    // Validate conversation.
     if (
       !Array.isArray(messages) ||
       messages.length === 0 ||
       messages.length > 20
     ) {
       return jsonResponse(
-        {
-          error: "Please provide between 1 and 20 messages."
-        },
+        { error: "Please provide between 1 and 20 messages." },
         400
       );
     }
 
-    // Validate every message
+    // Validate each message.
     for (const message of messages) {
       if (
         !message ||
@@ -148,19 +132,61 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    // Build conversation
+    // Find the latest customer message.
+    const latestUserMessage = [...messages]
+      .reverse()
+      .find(message => message.role === "user");
+
+    if (!latestUserMessage) {
+      return jsonResponse(
+        { error: "A customer message is required." },
+        400
+      );
+    }
+
+    const customerText = latestUserMessage.content.trim();
+
+    // SERVER-SIDE PRIVACY PROTECTION.
+    // Do not send messages containing contact details to Groq.
+    if (
+      containsEmail(customerText) ||
+      containsPhoneNumber(customerText)
+    ) {
+      return jsonResponse({
+        success: true,
+        reply:
+          "For your privacy, please don't share phone numbers or email addresses in this chat. Our secure enquiry system is not connected yet. Please contact the clinic directly for assistance."
+      });
+    }
+
+    // SERVER-SIDE BOOKING PROTECTION.
+    // Do not ask the AI to generate booking responses.
+    if (isBookingRequest(customerText)) {
+      return jsonResponse({
+        success: true,
+        reply:
+          "I'd be happy to help with your appointment enquiry! Online booking is not connected yet, so I cannot check availability, reserve a slot or confirm an appointment. Please contact the clinic directly to arrange your booking."
+      });
+    }
+
+    // Redact any personal information in earlier conversation messages.
+    const safeMessages = messages.map(message => ({
+      role: message.role,
+      content: redactPersonalInformation(
+        message.content.trim()
+      )
+    }));
+
+    // Prepare Groq conversation.
     const groqMessages = [
       {
         role: "system",
         content: SYSTEM_PROMPT
       },
-      ...messages.map((message) => ({
-        role: message.role,
-        content: message.content.trim()
-      }))
+      ...safeMessages
     ];
 
-    // Request AI response from Groq
+    // Call Groq API.
     const groqResponse = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -178,7 +204,7 @@ export async function onRequestPost({ request, env }) {
       }
     );
 
-    // Handle Groq API errors
+    // Handle Groq errors.
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
 
@@ -189,14 +215,12 @@ export async function onRequestPost({ request, env }) {
       );
 
       return jsonResponse(
-        {
-          error: "The AI service is temporarily unavailable."
-        },
+        { error: "The AI service is temporarily unavailable." },
         502
       );
     }
 
-    // Read AI response
+    // Parse Groq response.
     const result = await groqResponse.json();
 
     const reply =
@@ -212,7 +236,6 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Return response to frontend
     return jsonResponse({
       success: true,
       reply: reply.trim()
@@ -222,9 +245,7 @@ export async function onRequestPost({ request, env }) {
     console.error("Chat API error:", error);
 
     return jsonResponse(
-      {
-        error: "An unexpected server error occurred."
-      },
+      { error: "An unexpected server error occurred." },
       500
     );
   }
