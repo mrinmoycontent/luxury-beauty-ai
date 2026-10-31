@@ -86,9 +86,7 @@ button:disabled {
   main { max-width: 640px; }
 }
 
-/* AUTHENTICATION SCREEN */
-
-#authScreen {
+#authScreen, #resetScreen {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -124,7 +122,7 @@ button:disabled {
   box-shadow: 0 0 0 2px rgba(212,175,55,.15);
 }
 
-#authStatus {
+#authStatus, #resetStatus {
   min-height: 20px;
 }
 
@@ -181,6 +179,15 @@ button:disabled {
         >
       </div>
 
+      <div class="text-right">
+        <button
+          id="forgotPassword"
+          type="button"
+          class="text-sm text-gray-600 hover:text-black underline">
+          Forgot Password?
+        </button>
+      </div>
+
       <button
         id="loginButton"
         type="submit"
@@ -200,6 +207,69 @@ button:disabled {
     <p class="text-xs text-center text-gray-400 mt-6">
       Secure administrator access
     </p>
+
+  </div>
+</section>
+
+<!-- PASSWORD RESET SCREEN -->
+<section id="resetScreen" style="display:none">
+  <div class="auth-card">
+
+    <div class="text-center mb-8">
+      <span class="material-symbols-outlined text-4xl gold-accent">lock_reset</span>
+      <h1 class="text-3xl font-semibold mt-3">Reset Password</h1>
+      <p class="text-sm text-gray-500 mt-2">
+        Create a new administrator password.
+      </p>
+    </div>
+
+    <form id="resetForm" class="space-y-5">
+
+      <div>
+        <label for="newPassword" class="block text-sm font-medium mb-2">
+          New Password
+        </label>
+        <input
+          id="newPassword"
+          class="auth-input"
+          type="password"
+          minlength="8"
+          autocomplete="new-password"
+          placeholder="Enter new password"
+          required
+        >
+      </div>
+
+      <div>
+        <label for="confirmPassword" class="block text-sm font-medium mb-2">
+          Confirm New Password
+        </label>
+        <input
+          id="confirmPassword"
+          class="auth-input"
+          type="password"
+          minlength="8"
+          autocomplete="new-password"
+          placeholder="Confirm new password"
+          required
+        >
+      </div>
+
+      <button
+        id="resetButton"
+        type="submit"
+        class="w-full bg-black text-white rounded-lg py-3 font-semibold text-sm">
+        Update Password
+      </button>
+
+      <p
+        id="resetStatus"
+        class="text-xs text-center text-gray-500"
+        role="status"
+        aria-live="polite">
+      </p>
+
+    </form>
 
   </div>
 </section>
@@ -475,10 +545,6 @@ button:disabled {
 (() => {
   "use strict";
 
-  // --------------------------------
-  // NAVIGATION
-  // --------------------------------
-
   const views = {
     home: document.getElementById("homeView"),
     concierge: document.getElementById("conciergeView"),
@@ -510,20 +576,12 @@ button:disabled {
     });
   });
 
-  // --------------------------------
-  // DYNAMIC GREETING
-  // --------------------------------
-
   function updateGreeting() {
     const hour = new Date().getHours();
-
     let greeting = "Good Evening";
 
-    if (hour < 12) {
-      greeting = "Good Morning";
-    } else if (hour < 17) {
-      greeting = "Good Afternoon";
-    }
+    if (hour < 12) greeting = "Good Morning";
+    else if (hour < 17) greeting = "Good Afternoon";
 
     document.getElementById("greeting").textContent =
       greeting + ", Welcome Back";
@@ -531,11 +589,7 @@ button:disabled {
 
   updateGreeting();
 
-  // --------------------------------
   // GROQ CHAT INTEGRATION
-  // Cloudflare endpoint: POST /api/chat
-  // --------------------------------
-
   const form = document.getElementById("chatForm");
   const input = document.getElementById("chatInput");
   const send = document.getElementById("chatSend");
@@ -568,21 +622,15 @@ button:disabled {
     label.className = "text-[10px] uppercase font-bold mb-2 " +
       (role === "user" ? "text-white/60" : "text-gray-400");
 
-    label.textContent = role === "user"
-      ? "YOU"
-      : "AI RECEPTIONIST";
+    label.textContent = role === "user" ? "YOU" : "AI RECEPTIONIST";
 
     const message = document.createElement("p");
-
-    message.className =
-      "text-sm leading-relaxed whitespace-pre-wrap break-words";
-
+    message.className = "text-sm leading-relaxed whitespace-pre-wrap break-words";
     message.textContent = content;
 
     bubble.append(label, message);
     outer.appendChild(bubble);
     messagesEl.appendChild(outer);
-
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
@@ -591,7 +639,6 @@ button:disabled {
 
     history = [];
     messagesEl.innerHTML = "";
-
     renderMessage(initialMessage.role, initialMessage.content);
 
     statusEl.textContent = "Chat cleared. AI service ready.";
@@ -600,18 +647,25 @@ button:disabled {
 
   clearButton.addEventListener("click", resetChat);
 
+  // ENTER SENDS; SHIFT + ENTER CREATES A NEW LINE
+  input.addEventListener("keydown", event => {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.isComposing
+    ) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
   form.addEventListener("submit", async event => {
     event.preventDefault();
 
     const content = input.value.trim();
-
     if (!content || send.disabled) return;
 
-    history.push({
-      role: "user",
-      content
-    });
-
+    history.push({ role: "user", content });
     renderMessage("user", content);
 
     input.value = "";
@@ -621,12 +675,8 @@ button:disabled {
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          messages: history.slice(-20)
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history.slice(-20) })
       });
 
       let data;
@@ -638,23 +688,14 @@ button:disabled {
       }
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Request failed (" + response.status + ")."
-        );
+        throw new Error(data.error || "Request failed (" + response.status + ").");
       }
 
-      if (
-        typeof data.reply !== "string" ||
-        !data.reply.trim()
-      ) {
+      if (typeof data.reply !== "string" || !data.reply.trim()) {
         throw new Error("The AI returned an empty response.");
       }
 
-      history.push({
-        role: "assistant",
-        content: data.reply
-      });
-
+      history.push({ role: "assistant", content: data.reply });
       renderMessage("assistant", data.reply);
       statusEl.textContent = "AI response received.";
 
@@ -685,17 +726,24 @@ button:disabled {
   const SUPABASE_URL =
     "https://jrrtaswikhjetodxbwjr.supabase.co";
 
-  // Replace this placeholder with your Supabase publishable key.
-  // Never put a service_role key in frontend code.
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_SFj1LekmbDuAJS6voYEXVQ_JYE0rHvd";
 
   const authScreen = document.getElementById("authScreen");
+  const resetScreen = document.getElementById("resetScreen");
+
   const loginForm = document.getElementById("loginForm");
   const loginEmail = document.getElementById("loginEmail");
   const loginPassword = document.getElementById("loginPassword");
   const loginButton = document.getElementById("loginButton");
+  const forgotPassword = document.getElementById("forgotPassword");
   const authStatus = document.getElementById("authStatus");
+
+  const resetForm = document.getElementById("resetForm");
+  const newPassword = document.getElementById("newPassword");
+  const confirmPassword = document.getElementById("confirmPassword");
+  const resetButton = document.getElementById("resetButton");
+  const resetStatus = document.getElementById("resetStatus");
 
   const dashboardHeader = document.getElementById("dashboardHeader");
   const dashboardMain = document.getElementById("dashboardMain");
@@ -704,24 +752,31 @@ button:disabled {
 
   function showLogin(message = "") {
     authScreen.style.display = "flex";
+    resetScreen.style.display = "none";
     dashboardHeader.style.display = "none";
     dashboardMain.style.display = "none";
     dashboardNav.style.display = "none";
-
     authStatus.textContent = message;
+  }
+
+  function showReset(message = "") {
+    authScreen.style.display = "none";
+    resetScreen.style.display = "flex";
+    dashboardHeader.style.display = "none";
+    dashboardMain.style.display = "none";
+    dashboardNav.style.display = "none";
+    resetStatus.textContent = message;
   }
 
   function showDashboard() {
     authScreen.style.display = "none";
+    resetScreen.style.display = "none";
     dashboardHeader.style.display = "flex";
     dashboardMain.style.display = "block";
     dashboardNav.style.display = "flex";
   }
 
-  if (
-    !window.supabase ||
-    typeof window.supabase.createClient !== "function"
-  ) {
+  if (!window.supabase || typeof window.supabase.createClient !== "function") {
     showLogin("Authentication library could not load. Refresh the page and try again.");
     return;
   }
@@ -730,7 +785,7 @@ button:disabled {
     !SUPABASE_PUBLISHABLE_KEY ||
     SUPABASE_PUBLISHABLE_KEY === "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE"
   ) {
-    showLogin("Add your Supabase publishable key in the website code first.");
+    showLogin("Supabase publishable key is missing.");
     loginButton.disabled = true;
     return;
   }
@@ -740,10 +795,37 @@ button:disabled {
     SUPABASE_PUBLISHABLE_KEY
   );
 
-  // --------------------------------
-  // ADMIN LOGIN
-  // --------------------------------
+  // FORGOT PASSWORD EMAIL
+  forgotPassword.addEventListener("click", async () => {
+    const email = loginEmail.value.trim();
 
+    if (!email) {
+      authStatus.textContent = "Enter your registered admin email first.";
+      loginEmail.focus();
+      return;
+    }
+
+    forgotPassword.disabled = true;
+    authStatus.textContent = "Sending password reset email...";
+
+    try {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin
+      });
+
+      if (error) throw error;
+
+      authStatus.textContent =
+        "If the account exists, a password reset email has been sent. Check your inbox.";
+
+    } catch (error) {
+      authStatus.textContent = error.message || "Unable to send reset email.";
+    } finally {
+      forgotPassword.disabled = false;
+    }
+  });
+
+  // ADMIN LOGIN
   loginForm.addEventListener("submit", async event => {
     event.preventDefault();
 
@@ -784,14 +866,52 @@ button:disabled {
     }
   });
 
-  // --------------------------------
-  // RESTORE EXISTING LOGIN SESSION
-  // --------------------------------
+  // UPDATE PASSWORD AFTER RESET LINK
+  resetForm.addEventListener("submit", async event => {
+    event.preventDefault();
 
+    const password = newPassword.value;
+    const confirmation = confirmPassword.value;
+
+    if (password.length < 8) {
+      resetStatus.textContent = "Password must contain at least 8 characters.";
+      return;
+    }
+
+    if (password !== confirmation) {
+      resetStatus.textContent = "Passwords do not match.";
+      return;
+    }
+
+    resetButton.disabled = true;
+    resetButton.textContent = "Updating...";
+
+    try {
+      const { error } = await supabaseClient.auth.updateUser({
+        password: password
+      });
+
+      if (error) throw error;
+
+      newPassword.value = "";
+      confirmPassword.value = "";
+
+      await supabaseClient.auth.signOut();
+
+      showLogin("Password updated successfully. Please sign in with your new password.");
+
+    } catch (error) {
+      resetStatus.textContent = error.message || "Unable to update password.";
+    } finally {
+      resetButton.disabled = false;
+      resetButton.textContent = "Update Password";
+    }
+  });
+
+  // RESTORE EXISTING SESSION
   async function initializeAuth() {
     try {
-      const { data, error } =
-        await supabaseClient.auth.getSession();
+      const { data, error } = await supabaseClient.auth.getSession();
 
       if (error) throw error;
 
@@ -806,24 +926,21 @@ button:disabled {
     }
   }
 
-  // --------------------------------
   // AUTH STATE CHANGES
-  // --------------------------------
-
-  supabaseClient.auth.onAuthStateChange(
-    (event, session) => {
-      if (session) {
-        showDashboard();
-      } else {
-        showLogin();
-      }
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY") {
+      showReset("Enter and confirm your new password.");
+      return;
     }
-  );
 
-  // --------------------------------
+    if (session) {
+      showDashboard();
+    } else {
+      showLogin();
+    }
+  });
+
   // SIGN OUT
-  // --------------------------------
-
   signOutButton.addEventListener("click", async () => {
     signOutButton.disabled = true;
     signOutButton.textContent = "Signing out...";
