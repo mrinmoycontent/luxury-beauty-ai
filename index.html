@@ -822,8 +822,10 @@ button:disabled {
     showForgot();
   });
 
-  // RETURN TO LOGIN
+  // RETURN TO LOGIN AND CLEAR THE FORGOT-PASSWORD FORM
   backToLogin.addEventListener("click", () => {
+    forgotForm.reset();
+    forgotStatus.textContent = "";
     showLogin();
   });
 
