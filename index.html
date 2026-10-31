@@ -78,15 +78,13 @@ button:disabled {
   opacity: .5;
 }
 
-.chat-scroll {
-  scrollbar-width: thin;
-}
+.chat-scroll { scrollbar-width: thin; }
 
 @media (min-width: 640px) {
   main { max-width: 640px; }
 }
 
-#authScreen, #resetScreen {
+#authScreen, #forgotScreen, #resetScreen {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -122,8 +120,15 @@ button:disabled {
   box-shadow: 0 0 0 2px rgba(212,175,55,.15);
 }
 
-#authStatus, #resetStatus {
+.auth-status {
   min-height: 20px;
+}
+
+.auth-link {
+  color: #735c00;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 #signOutButton {
@@ -139,7 +144,7 @@ button:disabled {
 
 <body class="text-zinc-900 pb-28">
 
-<!-- ADMIN LOGIN SCREEN -->
+<!-- ADMIN LOGIN -->
 <section id="authScreen">
   <div class="auth-card">
 
@@ -150,7 +155,6 @@ button:disabled {
     </div>
 
     <form id="loginForm" class="space-y-5">
-
       <div>
         <label for="loginEmail" class="block text-sm font-medium mb-2">
           Email address
@@ -160,7 +164,7 @@ button:disabled {
           class="auth-input"
           type="email"
           autocomplete="username"
-          placeholder="Enter your admin email"
+          placeholder="Enter your email address"
           required
         >
       </div>
@@ -180,10 +184,7 @@ button:disabled {
       </div>
 
       <div class="text-right">
-        <button
-          id="forgotPassword"
-          type="button"
-          class="text-sm text-gray-600 hover:text-black underline">
+        <button id="forgotPassword" type="button" class="auth-link">
           Forgot Password?
         </button>
       </div>
@@ -195,36 +196,78 @@ button:disabled {
         Sign In
       </button>
 
-      <p
-        id="authStatus"
-        class="text-xs text-center text-gray-500"
-        role="status"
-        aria-live="polite">
-      </p>
-
+      <p id="authStatus" class="auth-status text-xs text-center text-gray-500"
+         role="status" aria-live="polite"></p>
     </form>
 
     <p class="text-xs text-center text-gray-400 mt-6">
       Secure administrator access
     </p>
+  </div>
+</section>
+
+<!-- FORGOT PASSWORD: EMAIL REQUEST -->
+<section id="forgotScreen" style="display:none">
+  <div class="auth-card">
+
+    <div class="text-center mb-8">
+      <span class="material-symbols-outlined text-4xl gold-accent">lock_reset</span>
+      <h1 class="text-3xl font-semibold mt-3">Forgot Password?</h1>
+      <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+        Enter the email address associated with your account.
+        We'll send you a link to reset your password.
+      </p>
+    </div>
+
+    <form id="forgotForm" class="space-y-5">
+      <div>
+        <label for="forgotEmail" class="block text-sm font-medium mb-2">
+          Email address
+        </label>
+        <input
+          id="forgotEmail"
+          class="auth-input"
+          type="email"
+          autocomplete="email"
+          placeholder="Enter your registered email"
+          required
+        >
+      </div>
+
+      <button
+        id="sendResetButton"
+        type="submit"
+        class="w-full bg-black text-white rounded-lg py-3 font-semibold text-sm">
+        Send Reset Link
+      </button>
+
+      <p id="forgotStatus" class="auth-status text-xs text-center text-gray-500"
+         role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="text-center mt-6">
+      <button id="backToLogin" type="button" class="auth-link">
+        <span class="material-symbols-outlined text-sm align-middle">arrow_back</span>
+        Back to Sign In
+      </button>
+    </div>
 
   </div>
 </section>
 
-<!-- PASSWORD RESET SCREEN -->
+<!-- CREATE NEW PASSWORD -->
 <section id="resetScreen" style="display:none">
   <div class="auth-card">
 
     <div class="text-center mb-8">
       <span class="material-symbols-outlined text-4xl gold-accent">lock_reset</span>
-      <h1 class="text-3xl font-semibold mt-3">Reset Password</h1>
+      <h1 class="text-3xl font-semibold mt-3">Create New Password</h1>
       <p class="text-sm text-gray-500 mt-2">
-        Create a new administrator password.
+        Choose a new password for your account.
       </p>
     </div>
 
     <form id="resetForm" class="space-y-5">
-
       <div>
         <label for="newPassword" class="block text-sm font-medium mb-2">
           New Password
@@ -235,7 +278,7 @@ button:disabled {
           type="password"
           minlength="8"
           autocomplete="new-password"
-          placeholder="Enter new password"
+          placeholder="At least 8 characters"
           required
         >
       </div>
@@ -250,7 +293,7 @@ button:disabled {
           type="password"
           minlength="8"
           autocomplete="new-password"
-          placeholder="Confirm new password"
+          placeholder="Re-enter your password"
           required
         >
       </div>
@@ -262,13 +305,8 @@ button:disabled {
         Update Password
       </button>
 
-      <p
-        id="resetStatus"
-        class="text-xs text-center text-gray-500"
-        role="status"
-        aria-live="polite">
-      </p>
-
+      <p id="resetStatus" class="auth-status text-xs text-center text-gray-500"
+         role="status" aria-live="polite"></p>
     </form>
 
   </div>
@@ -298,7 +336,7 @@ button:disabled {
   style="display:none"
   class="pt-20 px-5 space-y-6 mx-auto">
 
-  <!-- HOME VIEW -->
+  <!-- HOME -->
   <section id="homeView" class="page-view active space-y-6">
 
     <div class="mt-4 flex justify-between items-end">
@@ -365,7 +403,6 @@ button:disabled {
 
     <div class="glass-card border border-white rounded-xl p-6 premium-shadow">
       <h3 class="text-xl">Growth Performance</h3>
-
       <div class="py-10 text-center">
         <span class="material-symbols-outlined text-4xl text-gray-300">monitoring</span>
         <p class="text-sm font-medium mt-3">Analytics not available yet</p>
@@ -374,18 +411,15 @@ button:disabled {
         </p>
       </div>
     </div>
-
   </section>
 
-  <!-- CONCIERGE VIEW -->
+  <!-- CONCIERGE -->
   <section id="conciergeView" class="page-view space-y-5">
 
     <div class="mt-4">
       <p class="text-xs uppercase tracking-[.2em] text-gray-500">Your virtual assistant</p>
       <h2 class="text-3xl mt-2">AI Concierge</h2>
-      <p class="text-sm text-gray-500 mt-2">
-        Chat with your AI receptionist.
-      </p>
+      <p class="text-sm text-gray-500 mt-2">Chat with your AI receptionist.</p>
     </div>
 
     <div class="glass-card border border-white rounded-xl p-5 premium-shadow">
@@ -423,7 +457,6 @@ button:disabled {
       </div>
 
       <form id="chatForm" class="mt-5 pt-4 border-t border-gray-200 flex items-end gap-2">
-
         <textarea
           id="chatInput"
           rows="2"
@@ -439,7 +472,6 @@ button:disabled {
           class="bg-black text-white rounded-xl px-5 py-3 text-sm font-semibold">
           Send
         </button>
-
       </form>
 
       <div class="flex items-center justify-between mt-3">
@@ -458,15 +490,12 @@ button:disabled {
     </div>
   </section>
 
-  <!-- SCHEDULE VIEW -->
+  <!-- SCHEDULE -->
   <section id="scheduleView" class="page-view space-y-5">
-
     <div class="mt-4">
       <p class="text-xs uppercase tracking-[.2em] text-gray-500">Appointments</p>
       <h2 class="text-3xl mt-2">Schedule</h2>
-      <p class="text-sm text-gray-500 mt-2">
-        Manage your customer appointments.
-      </p>
+      <p class="text-sm text-gray-500 mt-2">Manage your customer appointments.</p>
     </div>
 
     <div class="glass-card border border-white rounded-xl p-8 text-center premium-shadow">
@@ -479,18 +508,14 @@ button:disabled {
         Database connection pending
       </span>
     </div>
-
   </section>
 
-  <!-- ANALYTICS VIEW -->
+  <!-- ANALYTICS -->
   <section id="analyticsView" class="page-view space-y-5">
-
     <div class="mt-4">
       <p class="text-xs uppercase tracking-[.2em] text-gray-500">Business insights</p>
       <h2 class="text-3xl mt-2">Analytics</h2>
-      <p class="text-sm text-gray-500 mt-2">
-        Track your beauty business performance.
-      </p>
+      <p class="text-sm text-gray-500 mt-2">Track your beauty business performance.</p>
     </div>
 
     <div class="glass-card border border-white rounded-xl p-8 text-center premium-shadow">
@@ -503,7 +528,6 @@ button:disabled {
         Waiting for real business data
       </span>
     </div>
-
   </section>
 
 </main>
@@ -537,7 +561,6 @@ button:disabled {
     <span class="material-symbols-outlined text-2xl">analytics</span>
     <span class="text-[11px]">Analytics</span>
   </button>
-
 </nav>
 
 <!-- APPLICATION JAVASCRIPT -->
@@ -571,9 +594,7 @@ button:disabled {
   };
 
   navButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      showView(button.dataset.view);
-    });
+    button.addEventListener("click", () => showView(button.dataset.view));
   });
 
   function updateGreeting() {
@@ -589,7 +610,7 @@ button:disabled {
 
   updateGreeting();
 
-  // GROQ CHAT INTEGRATION
+  // GROQ CHAT
   const form = document.getElementById("chatForm");
   const input = document.getElementById("chatInput");
   const send = document.getElementById("chatSend");
@@ -606,22 +627,16 @@ button:disabled {
 
   function renderMessage(role, content) {
     const outer = document.createElement("div");
-
-    outer.className = role === "user"
-      ? "flex justify-end"
-      : "flex justify-start";
+    outer.className = role === "user" ? "flex justify-end" : "flex justify-start";
 
     const bubble = document.createElement("div");
-
     bubble.className = role === "user"
       ? "max-w-[90%] bg-zinc-900 text-white p-4 rounded-xl shadow-sm"
       : "max-w-[90%] bg-white border-l-4 gold-border p-4 rounded-xl shadow-sm";
 
     const label = document.createElement("p");
-
     label.className = "text-[10px] uppercase font-bold mb-2 " +
       (role === "user" ? "text-white/60" : "text-gray-400");
-
     label.textContent = role === "user" ? "YOU" : "AI RECEPTIONIST";
 
     const message = document.createElement("p");
@@ -640,20 +655,15 @@ button:disabled {
     history = [];
     messagesEl.innerHTML = "";
     renderMessage(initialMessage.role, initialMessage.content);
-
     statusEl.textContent = "Chat cleared. AI service ready.";
     input.value = "";
   }
 
   clearButton.addEventListener("click", resetChat);
 
-  // ENTER SENDS; SHIFT + ENTER CREATES A NEW LINE
+  // ENTER SENDS; SHIFT + ENTER ADDS A NEW LINE
   input.addEventListener("keydown", event => {
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey &&
-      !event.isComposing
-    ) {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
       event.preventDefault();
       form.requestSubmit();
     }
@@ -701,12 +711,7 @@ button:disabled {
 
     } catch (error) {
       history.pop();
-
-      renderMessage(
-        "assistant",
-        "Sorry, I couldn't process that message. " + error.message
-      );
-
+      renderMessage("assistant", "Sorry, I couldn't process that message. " + error.message);
       statusEl.textContent = "Connection issue. Please try again.";
 
     } finally {
@@ -726,10 +731,12 @@ button:disabled {
   const SUPABASE_URL =
     "https://jrrtaswikhjetodxbwjr.supabase.co";
 
+  // Public publishable key. Never put a service_role key in frontend code.
   const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_SFj1LekmbDuAJS6voYEXVQ_JYE0rHvd";
 
   const authScreen = document.getElementById("authScreen");
+  const forgotScreen = document.getElementById("forgotScreen");
   const resetScreen = document.getElementById("resetScreen");
 
   const loginForm = document.getElementById("loginForm");
@@ -738,6 +745,12 @@ button:disabled {
   const loginButton = document.getElementById("loginButton");
   const forgotPassword = document.getElementById("forgotPassword");
   const authStatus = document.getElementById("authStatus");
+
+  const forgotForm = document.getElementById("forgotForm");
+  const forgotEmail = document.getElementById("forgotEmail");
+  const sendResetButton = document.getElementById("sendResetButton");
+  const forgotStatus = document.getElementById("forgotStatus");
+  const backToLogin = document.getElementById("backToLogin");
 
   const resetForm = document.getElementById("resetForm");
   const newPassword = document.getElementById("newPassword");
@@ -750,43 +763,51 @@ button:disabled {
   const dashboardNav = document.getElementById("dashboardNav");
   const signOutButton = document.getElementById("signOutButton");
 
-  function showLogin(message = "") {
-    authScreen.style.display = "flex";
+  let recoveryMode = false;
+  let recoveryHandled = false;
+
+  function hideAllScreens() {
+    authScreen.style.display = "none";
+    forgotScreen.style.display = "none";
     resetScreen.style.display = "none";
     dashboardHeader.style.display = "none";
     dashboardMain.style.display = "none";
     dashboardNav.style.display = "none";
+  }
+
+  function showLogin(message = "") {
+    hideAllScreens();
+    authScreen.style.display = "flex";
     authStatus.textContent = message;
   }
 
+  function showForgot(message = "") {
+    hideAllScreens();
+    forgotScreen.style.display = "flex";
+    forgotStatus.textContent = message;
+    forgotEmail.focus();
+  }
+
   function showReset(message = "") {
-    authScreen.style.display = "none";
+    hideAllScreens();
     resetScreen.style.display = "flex";
-    dashboardHeader.style.display = "none";
-    dashboardMain.style.display = "none";
-    dashboardNav.style.display = "none";
     resetStatus.textContent = message;
   }
 
   function showDashboard() {
-    authScreen.style.display = "none";
-    resetScreen.style.display = "none";
+    hideAllScreens();
     dashboardHeader.style.display = "flex";
     dashboardMain.style.display = "block";
     dashboardNav.style.display = "flex";
   }
 
   if (!window.supabase || typeof window.supabase.createClient !== "function") {
-    showLogin("Authentication library could not load. Refresh the page and try again.");
+    showLogin("Authentication service could not load. Refresh and try again.");
     return;
   }
 
-  if (
-    !SUPABASE_PUBLISHABLE_KEY ||
-    SUPABASE_PUBLISHABLE_KEY === "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE"
-  ) {
-    showLogin("Supabase publishable key is missing.");
-    loginButton.disabled = true;
+  if (!SUPABASE_PUBLISHABLE_KEY) {
+    showLogin("Authentication configuration is missing.");
     return;
   }
 
@@ -795,18 +816,32 @@ button:disabled {
     SUPABASE_PUBLISHABLE_KEY
   );
 
-  // FORGOT PASSWORD EMAIL
-  forgotPassword.addEventListener("click", async () => {
-    const email = loginEmail.value.trim();
+  // OPEN A SEPARATE FORGOT PASSWORD SCREEN
+  forgotPassword.addEventListener("click", () => {
+    forgotEmail.value = loginEmail.value.trim();
+    showForgot();
+  });
+
+  // RETURN TO LOGIN
+  backToLogin.addEventListener("click", () => {
+    showLogin();
+  });
+
+  // SEND PASSWORD RESET EMAIL
+  forgotForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email = forgotEmail.value.trim();
 
     if (!email) {
-      authStatus.textContent = "Enter your registered admin email first.";
-      loginEmail.focus();
+      forgotStatus.textContent = "Please enter your email address.";
+      forgotEmail.focus();
       return;
     }
 
-    forgotPassword.disabled = true;
-    authStatus.textContent = "Sending password reset email...";
+    sendResetButton.disabled = true;
+    sendResetButton.textContent = "Sending...";
+    forgotStatus.textContent = "Please wait...";
 
     try {
       const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
@@ -815,13 +850,18 @@ button:disabled {
 
       if (error) throw error;
 
-      authStatus.textContent =
-        "If the account exists, a password reset email has been sent. Check your inbox.";
+      // Neutral response protects account privacy.
+      forgotStatus.textContent =
+        "If an account exists with this email, a password reset link will be sent. Please check your inbox and spam folder.";
 
     } catch (error) {
-      authStatus.textContent = error.message || "Unable to send reset email.";
+      console.error("Password recovery request failed:", error);
+      forgotStatus.textContent =
+        "We couldn't process your request right now. Please try again later.";
+
     } finally {
-      forgotPassword.disabled = false;
+      sendResetButton.disabled = false;
+      sendResetButton.textContent = "Send Reset Link";
     }
   });
 
@@ -839,14 +879,11 @@ button:disabled {
 
     loginButton.disabled = true;
     loginButton.textContent = "Signing in...";
-    authStatus.textContent = "Verifying administrator credentials...";
+    authStatus.textContent = "Verifying your credentials...";
 
     try {
       const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-          email,
-          password
-        });
+        await supabaseClient.auth.signInWithPassword({ email, password });
 
       if (error) throw error;
 
@@ -858,15 +895,17 @@ button:disabled {
       showDashboard();
 
     } catch (error) {
+      console.error("Sign-in failed:", error);
       authStatus.textContent =
-        error.message || "Login failed. Please check your credentials.";
+        "Unable to sign in. Please check your email and password.";
+
     } finally {
       loginButton.disabled = false;
       loginButton.textContent = "Sign In";
     }
   });
 
-  // UPDATE PASSWORD AFTER RESET LINK
+  // CREATE NEW PASSWORD
   resetForm.addEventListener("submit", async event => {
     event.preventDefault();
 
@@ -874,17 +913,25 @@ button:disabled {
     const confirmation = confirmPassword.value;
 
     if (password.length < 8) {
-      resetStatus.textContent = "Password must contain at least 8 characters.";
+      resetStatus.textContent =
+        "Your password must contain at least 8 characters.";
       return;
     }
 
     if (password !== confirmation) {
-      resetStatus.textContent = "Passwords do not match.";
+      resetStatus.textContent = "Your passwords do not match.";
+      return;
+    }
+
+    if (!recoveryMode) {
+      resetStatus.textContent =
+        "Your password reset session is invalid or expired. Request a new reset link.";
       return;
     }
 
     resetButton.disabled = true;
     resetButton.textContent = "Updating...";
+    resetStatus.textContent = "Updating your password...";
 
     try {
       const { error } = await supabaseClient.auth.updateUser({
@@ -896,24 +943,32 @@ button:disabled {
       newPassword.value = "";
       confirmPassword.value = "";
 
+      recoveryMode = false;
+      recoveryHandled = true;
+
       await supabaseClient.auth.signOut();
 
-      showLogin("Password updated successfully. Please sign in with your new password.");
+      showLogin("Your password has been updated. Please sign in with your new password.");
 
     } catch (error) {
-      resetStatus.textContent = error.message || "Unable to update password.";
+      console.error("Password update failed:", error);
+      resetStatus.textContent =
+        error.message || "Unable to update your password. Please try again.";
+
     } finally {
       resetButton.disabled = false;
       resetButton.textContent = "Update Password";
     }
   });
 
-  // RESTORE EXISTING SESSION
+  // RESTORE SESSION WITHOUT OVERRIDING PASSWORD RECOVERY
   async function initializeAuth() {
     try {
       const { data, error } = await supabaseClient.auth.getSession();
 
       if (error) throw error;
+
+      if (recoveryMode || recoveryHandled) return;
 
       if (data.session) {
         showDashboard();
@@ -922,16 +977,22 @@ button:disabled {
       }
 
     } catch (error) {
-      showLogin("Unable to verify your session. Please sign in again.");
+      if (!recoveryMode && !recoveryHandled) {
+        showLogin("Unable to verify your session. Please sign in again.");
+      }
     }
   }
 
   // AUTH STATE CHANGES
   supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === "PASSWORD_RECOVERY") {
+      recoveryMode = true;
+      recoveryHandled = true;
       showReset("Enter and confirm your new password.");
       return;
     }
+
+    if (recoveryMode) return;
 
     if (session) {
       showDashboard();
@@ -950,10 +1011,12 @@ button:disabled {
 
       if (error) throw error;
 
+      recoveryMode = false;
+      recoveryHandled = false;
       showLogin("You have signed out.");
 
     } catch (error) {
-      alert("Sign out failed: " + error.message);
+      alert("Sign out failed. Please try again.");
     } finally {
       signOutButton.disabled = false;
       signOutButton.textContent = "Sign Out";
