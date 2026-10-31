@@ -1,394 +1,457 @@
+
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en" class="light">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luxury Beauty AI | Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
-<script id="tailwind-config">
+<script>
 tailwind.config = {
-  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        "error-container": "#ffdad6",
-        "on-tertiary-fixed": "#1b1b1b",
-        "surface-dim": "#dadada",
-        "on-surface-variant": "#4c4546",
-        "primary-fixed-dim": "#c6c6c6",
-        "surface-container": "#eeeeee",
-        "on-tertiary-fixed-variant": "#474747",
-        "primary": "#000000",
-        "tertiary-fixed-dim": "#c6c6c6",
-        "on-primary": "#ffffff",
-        "on-error": "#ffffff",
-        "on-background": "#1a1c1c",
-        "secondary": "#735c00",
-        "tertiary-container": "#1b1b1b",
-        "on-surface": "#1a1c1c",
-        "secondary-fixed": "#ffe088",
-        "outline-variant": "#cfc4c5",
-        "primary-container": "#1b1b1b",
-        "on-secondary-fixed-variant": "#574500",
-        "surface-container-low": "#f3f3f4",
-        "surface-bright": "#f9f9f9",
-        "surface": "#f9f9f9",
-        "on-error-container": "#93000a",
-        "secondary-fixed-dim": "#e9c349",
-        "surface-container-highest": "#e2e2e2",
-        "inverse-surface": "#2f3131",
-        "on-tertiary": "#ffffff",
-        "secondary-container": "#fed65b",
-        "inverse-on-surface": "#f0f1f1",
-        "outline": "#7e7576",
-        "on-primary-fixed": "#1b1b1b",
-        "tertiary": "#000000",
-        "surface-variant": "#e2e2e2",
-        "on-primary-container": "#848484",
-        "surface-container-lowest": "#ffffff",
-        "background": "#f9f9f9",
-        "surface-tint": "#5e5e5e",
-        "on-primary-fixed-variant": "#474747",
-        "on-secondary-fixed": "#241a00",
-        "inverse-primary": "#c6c6c6",
-        "tertiary-fixed": "#e2e2e2",
-        "on-tertiary-container": "#848484",
-        "on-secondary": "#ffffff",
-        "on-secondary-container": "#745c00",
-        "surface-container-high": "#e8e8e8",
-        "error": "#ba1a1a",
-        "primary-fixed": "#e2e2e2"
-      },
-      borderRadius: {
-        "DEFAULT": "0.25rem",
-        "lg": "0.5rem",
-        "xl": "1.25rem",
-        "full": "9999px"
-      },
-      spacing: {
-        "container-padding": "40px",
-        "margin-lg": "64px",
-        "margin-md": "32px",
-        "gutter": "24px",
-        "margin-sm": "16px",
-        "unit": "8px"
+        primary: "#000000",
+        secondary: "#735c00",
+        background: "#f9f9f9",
+        outline: "#7e7576",
+        "outline-variant": "#cfc4c5"
       },
       fontFamily: {
-        "headline-lg-mobile": ["Playfair Display"],
-        "label-md": ["Inter"],
-        "body-md": ["Inter"],
-        "headline-md": ["Playfair Display"],
-        "body-lg": ["Inter"],
-        "label-sm": ["Inter"],
-        "display-lg": ["Playfair Display"],
-        "headline-lg": ["Playfair Display"]
-      },
-      fontSize: {
-        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
-        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
-        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
-        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
-        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
-        "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
-        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}]
+        headline: ["Playfair Display"],
+        body: ["Inter"]
       }
-    },
-  },
-}
+    }
+  }
+};
 </script>
 
 <style>
+* { box-sizing: border-box; }
+
+body {
+  font-family: Inter, sans-serif;
+  background: #f9f9f9;
+  min-height: 100vh;
+}
+
+h1,h2,h3 {
+  font-family: "Playfair Display", serif;
+}
+
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
+
 .glass-card {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255,255,255,.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
+
 .gold-accent { color: #D4AF37; }
 .gold-border { border-color: #D4AF37; }
+
 .premium-shadow {
-  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,.06);
 }
-body { min-height: max(884px, 100dvh); }
+
+.page-view { display: none; }
+.page-view.active { display: block; }
+
+.nav-link.active {
+  color: #000;
+  font-weight: 700;
+}
+
+.nav-link.active .material-symbols-outlined {
+  color: #D4AF37;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.chat-scroll {
+  scrollbar-width: thin;
+}
+
+@media (min-width: 640px) {
+  main { max-width: 640px; }
+}
 </style>
 </head>
 
-<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<body class="text-zinc-900 pb-28">
 
-<!-- Top App Bar -->
-<header class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-outline-variant/20 h-16 flex items-center justify-between px-margin-sm">
-  <div class="flex items-center gap-4">
-    <button class="hover:opacity-80 transition-opacity active:scale-95 duration-150 text-primary">
-      <span class="material-symbols-outlined">menu</span>
-    </button>
-    <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">Glow Beauty AI</h1>
+<!-- HEADER -->
+<header class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 h-16 flex items-center justify-between px-5">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-2xl">auto_awesome</span>
+    <h1 class="text-xl font-semibold tracking-tight">Glow Beauty AI</h1>
   </div>
-  <div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30 ring-2 ring-surface-container">
-    <img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdMCd8WDsdSqqCy-DbKYLIMBJgdSnX2LKqsw4ktW3MNzaH2i7vDDm8ESiRwu7a5M9T5NmOJp-hrsNHwjmNbkTRhKwSmmSgb2ZoWyuW4NEZNkZuvOoFiapAeVTpvcgtx_dQCBAijbZqOB2NIFt0cDwC2UWo2eAZRYstn_L-VJ0uTw5NoUWy65AQjdDKf2gh3JtHnf-YKGwCGqCGbXuUeikNmg6lRI0b2HEVfwweZaDo8t6jP1rXvE90eo2DcDq4dYOEjgj-RFxJHWg"/>
+
+  <div class="w-9 h-9 rounded-full bg-zinc-900 text-white flex items-center justify-center">
+    <span class="material-symbols-outlined">person</span>
   </div>
 </header>
 
-<!-- Main Content Canvas -->
-<main class="pt-20 px-margin-sm space-y-gutter max-w-screen-sm mx-auto">
+<main class="pt-20 px-5 space-y-6 mx-auto">
 
-<!-- Welcome Section -->
-<section class="mt-4 flex justify-between items-end">
-  <div>
-    <p class="font-label-sm text-label-sm uppercase text-outline tracking-[0.2em]">Dashboard Overview</p>
-    <h2 class="font-headline-md text-headline-md text-primary mt-1">Good Morning, Elena</h2>
-  </div>
-  <div class="text-right">
-    <p class="font-label-sm text-[10px] text-green-600 flex items-center gap-1 font-semibold uppercase">
-      <span class="material-symbols-outlined text-[14px]">trending_up</span> 98% Sentiment
-    </p>
-  </div>
-</section>
+  <!-- HOME VIEW -->
+  <section id="homeView" class="page-view active space-y-6">
 
-<!-- Key Metrics Bento Grid -->
-<section class="grid grid-cols-2 gap-4">
-  <div class="glass-card p-5 rounded-xl border border-white/40 premium-shadow flex flex-col justify-between aspect-square">
-    <div class="flex justify-between items-start">
-      <span class="material-symbols-outlined gold-accent text-[22px]">calendar_month</span>
-      <span class="material-symbols-outlined text-outline/30 text-[18px]">auto_awesome</span>
-    </div>
-    <div class="mt-4">
-      <p class="font-label-sm text-label-sm text-on-surface-variant font-medium">Total Bookings</p>
-      <div class="flex items-baseline gap-1">
-        <p class="font-headline-lg-mobile text-headline-lg text-primary">124</p>
-        <span class="text-[10px] text-green-600 font-bold">+12%</span>
+    <div class="mt-4 flex justify-between items-end">
+      <div>
+        <p class="text-xs uppercase tracking-[.2em] text-gray-500">Dashboard Overview</p>
+        <h2 id="greeting" class="text-2xl mt-2">Welcome</h2>
       </div>
-    </div>
-  </div>
-
-  <div class="glass-card p-5 rounded-xl border border-white/40 premium-shadow flex flex-col justify-between aspect-square">
-    <div class="flex justify-between items-start">
-      <span class="material-symbols-outlined gold-accent text-[22px]">group</span>
-      <span class="text-[10px] font-bold text-outline/40">LIVE</span>
-    </div>
-    <div class="mt-4">
-      <p class="font-label-sm text-label-sm text-on-surface-variant font-medium">Active Customers</p>
-      <p class="font-headline-lg-mobile text-headline-lg text-primary">842</p>
-    </div>
-  </div>
-
-  <div class="glass-card p-5 rounded-xl border border-white/40 premium-shadow flex flex-col justify-between aspect-square">
-    <div class="flex justify-between items-start">
-      <span class="material-symbols-outlined gold-accent text-[22px]">auto_awesome</span>
-      <div class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></div>
-    </div>
-    <div class="mt-4">
-      <p class="font-label-sm text-label-sm text-on-surface-variant font-medium">AI Conversations</p>
-      <p class="font-headline-lg-mobile text-headline-lg text-primary">56</p>
-    </div>
-  </div>
-
-  <div class="glass-card p-5 rounded-xl border border-white/40 premium-shadow flex flex-col justify-between aspect-square">
-    <div class="flex justify-between items-start">
-      <span class="material-symbols-outlined gold-accent text-[22px]">payments</span>
-      <span class="material-symbols-outlined text-outline/30 text-[18px]">north_east</span>
-    </div>
-    <div class="mt-4">
-      <p class="font-label-sm text-label-sm text-on-surface-variant font-medium">Revenue</p>
-      <p class="font-headline-lg-mobile text-headline-lg text-primary">$12.4k</p>
-    </div>
-  </div>
-</section>
-
-<!-- Live AI Concierge -->
-<section id="concierge">
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="font-headline-md text-primary flex items-center gap-2">
-      AI Concierge
-      <span class="material-symbols-outlined gold-accent text-[18px]">auto_awesome</span>
-    </h3>
-    <span class="px-2 py-1 bg-primary text-[9px] font-bold uppercase tracking-widest text-white rounded">AI Connected</span>
-  </div>
-
-  <div class="glass-card border border-white/50 rounded-xl p-6 premium-shadow space-y-4">
-    <p class="text-sm text-outline">Chat with the AI receptionist. Clinic services, prices, opening hours and appointment availability have not yet been configured, so the assistant cannot confirm bookings.</p>
-
-    <div id="chatMessages" class="space-y-4 max-h-96 overflow-y-auto" aria-live="polite">
-      <div class="flex justify-start">
-        <div class="max-w-[85%] bg-white border-l-4 gold-border p-4 rounded-[20px_20px_20px_4px] shadow-sm">
-          <div class="flex items-center gap-1 mb-1 text-[10px] font-bold text-outline/60 tracking-wider">
-            <span class="material-symbols-outlined text-[12px] gold-accent">auto_awesome</span> AI RECEPTIONIST
-          </div>
-          <p class="text-[15px] leading-relaxed text-on-surface">Hello! Welcome to Glow Beauty AI. How can I help you today?</p>
-        </div>
-      </div>
+      <span class="text-xs text-gray-500">Demo dashboard</span>
     </div>
 
-    <form id="chatForm" class="pt-4 border-t border-outline-variant/20 flex items-end gap-2">
-      <label class="sr-only" for="chatInput">Your message</label>
-      <textarea id="chatInput" rows="2" maxlength="4000" required placeholder="Type your message..." class="flex-1 min-w-0 resize-y rounded-xl border border-outline-variant/60 bg-white p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"></textarea>
-      <button id="chatSend" type="submit" class="shrink-0 rounded-xl bg-zinc-900 text-white px-5 py-3 text-sm font-semibold hover:opacity-90 disabled:opacity-50">Send</button>
-    </form>
+    <!-- HONEST METRIC CARDS -->
+    <div class="grid grid-cols-2 gap-4">
 
-    <p id="chatStatus" class="text-[11px] text-outline" role="status">AI service ready.</p>
-  </div>
-</section>
-<!-- Booking Growth Chart -->
-<section>
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="font-headline-md text-primary">Growth Performance</h3>
-    <span class="font-label-sm text-outline">This Week</span>
-  </div>
-
-  <div class="glass-card border border-white/50 rounded-xl p-6 premium-shadow">
-    <div class="h-32 flex items-end justify-between gap-3">
-      <div class="w-full bg-surface-container-high/50 rounded-t-lg h-[40%]"></div>
-      <div class="w-full bg-surface-container-high/50 rounded-t-lg h-[60%]"></div>
-      <div class="w-full bg-surface-container-high/50 rounded-t-lg h-[55%]"></div>
-      <div class="w-full bg-primary rounded-t-lg h-[85%]"></div>
-      <div class="w-full bg-surface-container-high/50 rounded-t-lg h-[70%]"></div>
-      <div class="w-full bg-surface-container-high/50 rounded-t-lg h-[95%]"></div>
-      <div class="w-full bg-secondary-container rounded-t-lg h-[80%] border-t-2 gold-border"></div>
-    </div>
-
-    <div class="flex justify-between mt-4 font-label-sm text-[11px] text-outline px-1 uppercase tracking-tighter">
-      <span>Mon</span>
-      <span>Tue</span>
-      <span>Wed</span>
-      <span>Thu</span>
-      <span>Fri</span>
-      <span>Sat</span>
-      <span>Sun</span>
-    </div>
-  </div>
-</section>
-
-<!-- Upcoming Appointments -->
-<section>
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="font-headline-md text-primary">Today's Schedule</h3>
-    <button class="font-label-sm text-primary flex items-center gap-1">
-      See All
-      <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-    </button>
-  </div>
-
-  <div class="space-y-4">
-
-    <!-- Item 1 -->
-    <div class="glass-card border border-white/50 rounded-xl p-4 flex items-center justify-between premium-shadow min-h-[72px]">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white ring-1 ring-outline-variant/20 shadow-sm">
-          <img alt="Emma Wilson avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBDJMB3h-8N6mL0LZq8WYxnP-mMr2lhksx9zsmJSmf7mQTghxdr_4hwg-9J4Xcr1KU7b6EuoFyTxqKms-Tw3qo5uyTgYLj4kplrIswzH-zeGCqYO8eZNC1My534LAUaitO0bGnqXyaGfi30J--rYEY6Ss4I8L1RGNSrkCpySSO4lvqspRlYIAGhPkIDHDe9G5zZ98QEpFxnSq0ihn0DOuD8LLy_r1uE2A4zWWa8_Wz2RmXlpteTxWHNUAw0fGkJ7BnwWJDoQ-cDxA"/>
-        </div>
-
+      <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
+        <span class="material-symbols-outlined gold-accent text-2xl">calendar_month</span>
         <div>
-          <p class="font-headline-md text-[16px] text-primary leading-tight">Emma Wilson</p>
-          <div class="flex items-center gap-2 mt-0.5">
-            <p class="font-label-sm text-[12px] text-outline">Hydra Facial</p>
-            <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
-            <span class="text-[10px] font-bold text-secondary flex items-center gap-0.5">
-              <span class="material-symbols-outlined text-[10px] fill-1">stars</span> VIP
-            </span>
-          </div>
+          <p class="text-xs text-gray-500">Total Bookings</p>
+          <p class="text-lg font-semibold mt-1">Not connected</p>
         </div>
       </div>
 
-      <div class="text-right">
-        <p class="font-headline-md text-[16px] text-primary">5:00 PM</p>
-        <span class="text-[10px] px-2 py-0.5 bg-green-50 text-green-700 rounded-full font-bold border border-green-100">CONFIRMED</span>
-      </div>
-    </div>
-
-    <!-- Item 2 -->
-    <div class="glass-card border border-white/50 rounded-xl p-4 flex items-center justify-between premium-shadow min-h-[72px]">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white ring-1 ring-outline-variant/20 shadow-sm">
-          <img alt="James Chen avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmtlNaS_-2hnOil0ZMC0HZIk6pjRVi6n-Msb8Qqw7ewBcLsReG9VYSLKDy16_RypCQ2eWptQ3ygesp7hooXMnK_c8yCjCB3TQdm5xORmE36PegNh_9DuSQ2hGPEGkXy7tJeoV0iR_7td5Hd2IWPOvefiDKg90jTuo9s-glBRlfYY4iRI-yZlgCcl7YdZ6QqhHe5oyGQ7lhb0ooAR_0DhHA-s5MWO87452uPT_f_hprfQvqHg9L3HJmCVCfXNj4DzAF5TTsORufPko"/>
-        </div>
-
+      <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
+        <span class="material-symbols-outlined gold-accent text-2xl">group</span>
         <div>
-          <p class="font-headline-md text-[16px] text-primary leading-tight">James Chen</p>
-          <div class="flex items-center gap-2 mt-0.5">
-            <p class="font-label-sm text-[12px] text-outline">Laser Therapy</p>
-            <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
-            <span class="text-[10px] font-bold text-outline tracking-wider flex items-center gap-0.5">
-              <span class="material-symbols-outlined text-[10px]">auto_awesome</span> AI BOOKED
-            </span>
-          </div>
+          <p class="text-xs text-gray-500">Customers</p>
+          <p class="text-lg font-semibold mt-1">Not connected</p>
         </div>
       </div>
 
-      <div class="text-right">
-        <p class="font-headline-md text-[16px] text-primary">6:30 PM</p>
-        <span class="text-[10px] px-2 py-0.5 bg-yellow-50 text-yellow-700 rounded-full font-bold border border-yellow-100 uppercase">Checking in</span>
+      <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
+        <span class="material-symbols-outlined gold-accent text-2xl">auto_awesome</span>
+        <div>
+          <p class="text-xs text-gray-500">AI Conversations</p>
+          <p class="text-lg font-semibold mt-1">Session only</p>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
+        <span class="material-symbols-outlined gold-accent text-2xl">payments</span>
+        <div>
+          <p class="text-xs text-gray-500">Revenue</p>
+          <p class="text-lg font-semibold mt-1">Not connected</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- AI STATUS -->
+    <div class="glass-card border border-white rounded-xl p-6 premium-shadow">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl">AI Concierge</h3>
+        <span class="text-xs bg-black text-white px-3 py-1 rounded-full">CONNECTED</span>
+      </div>
+
+      <p class="text-sm text-gray-500 mt-3 leading-relaxed">
+        Your AI receptionist is connected. Start a conversation to test the assistant.
+      </p>
+
+      <button onclick="showView('concierge')"
+        class="mt-5 bg-black text-white rounded-lg px-5 py-3 text-sm font-semibold">
+        Open AI Concierge
+        <span class="material-symbols-outlined text-sm align-middle ml-1">arrow_forward</span>
+      </button>
+    </div>
+
+    <!-- PERFORMANCE EMPTY STATE -->
+    <div class="glass-card border border-white rounded-xl p-6 premium-shadow">
+      <h3 class="text-xl">Growth Performance</h3>
+
+      <div class="py-10 text-center">
+        <span class="material-symbols-outlined text-4xl text-gray-300">monitoring</span>
+        <p class="text-sm font-medium mt-3">Analytics not available yet</p>
+        <p class="text-xs text-gray-500 mt-2">
+          Connect Supabase to display real booking and revenue data.
+        </p>
       </div>
     </div>
 
-  </div>
-</section>
+  </section>
+
+  <!-- CONCIERGE VIEW -->
+  <section id="conciergeView" class="page-view space-y-5">
+
+    <div class="mt-4">
+      <p class="text-xs uppercase tracking-[.2em] text-gray-500">Your virtual assistant</p>
+      <h2 class="text-3xl mt-2">AI Concierge</h2>
+      <p class="text-sm text-gray-500 mt-2">
+        Chat with your AI receptionist.
+      </p>
+    </div>
+
+    <div class="glass-card border border-white rounded-xl p-5 premium-shadow">
+
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined gold-accent">auto_awesome</span>
+          <span class="font-semibold text-sm">AI Receptionist</span>
+        </div>
+
+        <span class="text-xs text-green-700 flex items-center gap-1">
+          <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+          Connected
+        </span>
+      </div>
+
+      <p class="text-xs text-gray-500 mb-4">
+        Clinic services, prices, opening hours and appointment availability have not yet been configured. The assistant cannot confirm appointments.
+      </p>
+
+      <div id="chatMessages"
+        class="chat-scroll space-y-4 max-h-[430px] min-h-[220px] overflow-y-auto p-1"
+        aria-live="polite">
+
+        <div class="flex justify-start">
+          <div class="max-w-[90%] bg-white border-l-4 gold-border p-4 rounded-xl shadow-sm">
+            <p class="text-[10px] uppercase font-bold text-gray-400 mb-2">AI Receptionist</p>
+            <p class="text-sm leading-relaxed">
+              Hello! Welcome to Glow Beauty AI. How can I help you today?
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <form id="chatForm" class="mt-5 pt-4 border-t border-gray-200 flex items-end gap-2">
+
+        <textarea
+          id="chatInput"
+          rows="2"
+          maxlength="4000"
+          required
+          placeholder="Type your message..."
+          class="flex-1 min-w-0 resize-none rounded-xl border border-gray-200 bg-white p-3 text-sm focus:border-black focus:ring-1 focus:ring-black"
+        ></textarea>
+
+        <button
+          id="chatSend"
+          type="submit"
+          class="bg-black text-white rounded-xl px-5 py-3 text-sm font-semibold">
+          Send
+        </button>
+
+      </form>
+
+      <div class="flex items-center justify-between mt-3">
+        <p id="chatStatus" class="text-xs text-gray-500" role="status">
+          AI service ready.
+        </p>
+
+        <button
+          id="clearChat"
+          type="button"
+          class="text-xs text-red-600 font-medium hover:underline">
+          Clear Chat
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SCHEDULE VIEW -->
+  <section id="scheduleView" class="page-view space-y-5">
+
+    <div class="mt-4">
+      <p class="text-xs uppercase tracking-[.2em] text-gray-500">Appointments</p>
+      <h2 class="text-3xl mt-2">Schedule</h2>
+      <p class="text-sm text-gray-500 mt-2">
+        Manage your customer appointments.
+      </p>
+    </div>
+
+    <div class="glass-card border border-white rounded-xl p-8 text-center premium-shadow">
+      <span class="material-symbols-outlined text-5xl text-gray-300">calendar_month</span>
+      <h3 class="text-xl mt-4">No live appointments</h3>
+      <p class="text-sm text-gray-500 mt-3 leading-relaxed">
+        Appointment records will appear here after the Supabase database and booking workflow are connected.
+      </p>
+      <span class="inline-block mt-5 text-xs bg-gray-100 text-gray-600 rounded-full px-4 py-2">
+        Database connection pending
+      </span>
+    </div>
+
+  </section>
+
+  <!-- ANALYTICS VIEW -->
+  <section id="analyticsView" class="page-view space-y-5">
+
+    <div class="mt-4">
+      <p class="text-xs uppercase tracking-[.2em] text-gray-500">Business insights</p>
+      <h2 class="text-3xl mt-2">Analytics</h2>
+      <p class="text-sm text-gray-500 mt-2">
+        Track your beauty business performance.
+      </p>
+    </div>
+
+    <div class="glass-card border border-white rounded-xl p-8 text-center premium-shadow">
+      <span class="material-symbols-outlined text-5xl text-gray-300">analytics</span>
+      <h3 class="text-xl mt-4">Analytics coming soon</h3>
+      <p class="text-sm text-gray-500 mt-3 leading-relaxed">
+        Real booking trends, customer activity, AI conversations and revenue reports will be displayed after database integration.
+      </p>
+      <span class="inline-block mt-5 text-xs bg-gray-100 text-gray-600 rounded-full px-4 py-2">
+        Waiting for real business data
+      </span>
+    </div>
+
+  </section>
 
 </main>
 
-<!-- Bottom Navigation Bar -->
-<nav class="fixed bottom-0 w-full z-50 bg-white/90 backdrop-blur-xl border-t border-outline-variant/10 h-20 pb-safe px-4 flex justify-around items-center">
+<!-- BOTTOM NAVIGATION -->
+<nav class="fixed bottom-0 w-full z-50 bg-white/95 backdrop-blur-xl border-t border-gray-200/70 h-20 px-3 flex justify-around items-center">
 
-  <!-- Home Active -->
-  <a class="flex flex-col items-center justify-center text-primary font-bold transition-all scale-105" href="#">
-    <span class="material-symbols-outlined mb-1 text-[24px]">dashboard</span>
-    <span class="font-label-sm text-[11px] tracking-tight">Home</span>
-  </a>
+  <button data-view="home"
+    class="nav-link active flex flex-col items-center justify-center gap-1 w-1/4">
+    <span class="material-symbols-outlined text-2xl">dashboard</span>
+    <span class="text-[11px]">Home</span>
+  </button>
 
-  <!-- AI Concierge -->
-  <a class="flex flex-col items-center justify-center text-outline/60 hover:text-primary transition-all" href="#concierge">
-    <span class="material-symbols-outlined mb-1 text-[24px]">auto_awesome</span>
-    <span class="font-label-sm text-[11px] tracking-tight">Concierge</span>
-  </a>
+  <button data-view="concierge"
+    class="nav-link text-gray-400 flex flex-col items-center justify-center gap-1 w-1/4">
+    <span class="material-symbols-outlined text-2xl">auto_awesome</span>
+    <span class="text-[11px]">Concierge</span>
+  </button>
 
-  <!-- Schedule -->
-  <a class="flex flex-col items-center justify-center text-outline/60 hover:text-primary transition-all" href="#">
-    <span class="material-symbols-outlined mb-1 text-[24px]">calendar_today</span>
-    <span class="font-label-sm text-[11px] tracking-tight">Schedule</span>
-  </a>
+  <button data-view="schedule"
+    class="nav-link text-gray-400 flex flex-col items-center justify-center gap-1 w-1/4">
+    <span class="material-symbols-outlined text-2xl">calendar_month</span>
+    <span class="text-[11px]">Schedule</span>
+  </button>
 
-  <!-- Analytics -->
-  <a class="flex flex-col items-center justify-center text-outline/60 hover:text-primary transition-all" href="#">
-    <span class="material-symbols-outlined mb-1 text-[24px]">analytics</span>
-    <span class="font-label-sm text-[11px] tracking-tight">Analytics</span>
-  </a>
+  <button data-view="analytics"
+    class="nav-link text-gray-400 flex flex-col items-center justify-center gap-1 w-1/4">
+    <span class="material-symbols-outlined text-2xl">analytics</span>
+    <span class="text-[11px]">Analytics</span>
+  </button>
 
 </nav>
 
-<!-- Groq AI Chat Integration -->
+<!-- APPLICATION JAVASCRIPT -->
 <script>
 (() => {
+  "use strict";
+
+  // --------------------------------
+  // NAVIGATION
+  // --------------------------------
+
+  const views = {
+    home: document.getElementById("homeView"),
+    concierge: document.getElementById("conciergeView"),
+    schedule: document.getElementById("scheduleView"),
+    analytics: document.getElementById("analyticsView")
+  };
+
+  const navButtons = document.querySelectorAll(".nav-link");
+
+  window.showView = function(viewName) {
+    if (!views[viewName]) return;
+
+    Object.entries(views).forEach(([name, element]) => {
+      element.classList.toggle("active", name === viewName);
+    });
+
+    navButtons.forEach(button => {
+      const selected = button.dataset.view === viewName;
+      button.classList.toggle("active", selected);
+      button.classList.toggle("text-gray-400", !selected);
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  navButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      showView(button.dataset.view);
+    });
+  });
+
+  // --------------------------------
+  // DYNAMIC GREETING
+  // --------------------------------
+
+  function updateGreeting() {
+    const hour = new Date().getHours();
+
+    let greeting = "Good Evening";
+
+    if (hour < 12) {
+      greeting = "Good Morning";
+    } else if (hour < 17) {
+      greeting = "Good Afternoon";
+    }
+
+    document.getElementById("greeting").textContent =
+      greeting + ", Welcome Back";
+  }
+
+  updateGreeting();
+
+  // --------------------------------
+  // GROQ CHAT INTEGRATION
+  // Existing Cloudflare endpoint:
+  // POST /api/chat
+  // --------------------------------
+
   const form = document.getElementById("chatForm");
   const input = document.getElementById("chatInput");
   const send = document.getElementById("chatSend");
   const messagesEl = document.getElementById("chatMessages");
   const statusEl = document.getElementById("chatStatus");
-  const history = [];
+  const clearButton = document.getElementById("clearChat");
 
-  function addMessage(role, content) {
+  const initialMessage = {
+    role: "assistant",
+    content: "Hello! Welcome to Glow Beauty AI. How can I help you today?"
+  };
+
+  let history = [];
+
+  function renderMessage(role, content) {
     const outer = document.createElement("div");
+
     outer.className = role === "user"
       ? "flex justify-end"
       : "flex justify-start";
 
     const bubble = document.createElement("div");
-    bubble.className = role === "user"
-      ? "max-w-[85%] bg-zinc-900 text-white p-4 rounded-[20px_20px_4px_20px] shadow-sm"
-      : "max-w-[85%] bg-white border-l-4 gold-border p-4 rounded-[20px_20px_20px_4px] shadow-sm";
 
-    const label = document.createElement("div");
-    label.className = "text-[10px] font-bold tracking-wider mb-1 " +
-      (role === "user" ? "text-white/60" : "text-outline/60");
+    bubble.className = role === "user"
+      ? "max-w-[90%] bg-zinc-900 text-white p-4 rounded-xl shadow-sm"
+      : "max-w-[90%] bg-white border-l-4 gold-border p-4 rounded-xl shadow-sm";
+
+    const label = document.createElement("p");
+
+    label.className = "text-[10px] uppercase font-bold mb-2 " +
+      (role === "user" ? "text-white/60" : "text-gray-400");
 
     label.textContent = role === "user"
       ? "YOU"
       : "AI RECEPTIONIST";
 
     const message = document.createElement("p");
-    message.className = "text-[15px] leading-relaxed whitespace-pre-wrap break-words";
+
+    message.className =
+      "text-sm leading-relaxed whitespace-pre-wrap break-words";
+
+    // textContent prevents assistant/user text from being interpreted as HTML.
     message.textContent = content;
 
     bubble.append(label, message);
@@ -398,7 +461,21 @@ body { min-height: max(884px, 100dvh); }
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  form.addEventListener("submit", async (event) => {
+  function resetChat() {
+    if (send.disabled) return;
+
+    history = [];
+    messagesEl.innerHTML = "";
+
+    renderMessage(initialMessage.role, initialMessage.content);
+
+    statusEl.textContent = "Chat cleared. AI service ready.";
+    input.value = "";
+  }
+
+  clearButton.addEventListener("click", resetChat);
+
+  form.addEventListener("submit", async event => {
     event.preventDefault();
 
     const content = input.value.trim();
@@ -410,7 +487,7 @@ body { min-height: max(884px, 100dvh); }
       content
     });
 
-    addMessage("user", content);
+    renderMessage("user", content);
 
     input.value = "";
     send.disabled = true;
@@ -427,7 +504,13 @@ body { min-height: max(884px, 100dvh); }
         })
       });
 
-      const data = await response.json();
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("The server returned an invalid response.");
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -447,13 +530,15 @@ body { min-height: max(884px, 100dvh); }
         content: data.reply
       });
 
-      addMessage("assistant", data.reply);
+      renderMessage("assistant", data.reply);
+
       statusEl.textContent = "AI response received.";
 
     } catch (error) {
+      // Remove the failed user message from API history.
       history.pop();
 
-      addMessage(
+      renderMessage(
         "assistant",
         "Sorry, I couldn't process that message. " + error.message
       );
@@ -465,6 +550,7 @@ body { min-height: max(884px, 100dvh); }
       input.focus();
     }
   });
+
 })();
 </script>
 
