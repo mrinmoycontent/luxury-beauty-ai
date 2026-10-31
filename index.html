@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 tailwind.config = {
@@ -84,24 +85,148 @@ button:disabled {
 @media (min-width: 640px) {
   main { max-width: 640px; }
 }
+
+/* AUTHENTICATION SCREEN */
+
+#authScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(212,175,55,.12), transparent 35%),
+    #f9f9f9;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255,255,255,.9);
+  border: 1px solid #eee;
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: 0 15px 50px rgba(0,0,0,.07);
+}
+
+.auth-input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  padding: 13px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #D4AF37;
+  box-shadow: 0 0 0 2px rgba(212,175,55,.15);
+}
+
+#authStatus {
+  min-height: 20px;
+}
+
+#signOutButton {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  background: white;
+}
 </style>
 </head>
 
 <body class="text-zinc-900 pb-28">
 
+<!-- ADMIN LOGIN SCREEN -->
+<section id="authScreen">
+  <div class="auth-card">
+
+    <div class="text-center mb-8">
+      <span class="material-symbols-outlined text-4xl gold-accent">auto_awesome</span>
+      <h1 class="text-3xl font-semibold mt-3">Glow Beauty AI</h1>
+      <p class="text-sm text-gray-500 mt-2">Administrator dashboard</p>
+    </div>
+
+    <form id="loginForm" class="space-y-5">
+
+      <div>
+        <label for="loginEmail" class="block text-sm font-medium mb-2">
+          Email address
+        </label>
+        <input
+          id="loginEmail"
+          class="auth-input"
+          type="email"
+          autocomplete="username"
+          placeholder="Enter your admin email"
+          required
+        >
+      </div>
+
+      <div>
+        <label for="loginPassword" class="block text-sm font-medium mb-2">
+          Password
+        </label>
+        <input
+          id="loginPassword"
+          class="auth-input"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter your password"
+          required
+        >
+      </div>
+
+      <button
+        id="loginButton"
+        type="submit"
+        class="w-full bg-black text-white rounded-lg py-3 font-semibold text-sm">
+        Sign In
+      </button>
+
+      <p
+        id="authStatus"
+        class="text-xs text-center text-gray-500"
+        role="status"
+        aria-live="polite">
+      </p>
+
+    </form>
+
+    <p class="text-xs text-center text-gray-400 mt-6">
+      Secure administrator access
+    </p>
+
+  </div>
+</section>
+
 <!-- HEADER -->
-<header class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 h-16 flex items-center justify-between px-5">
+<header
+  id="dashboardHeader"
+  style="display:none"
+  class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 h-16 flex items-center justify-between px-5">
+
   <div class="flex items-center gap-3">
     <span class="material-symbols-outlined text-2xl">auto_awesome</span>
     <h1 class="text-xl font-semibold tracking-tight">Glow Beauty AI</h1>
   </div>
 
-  <div class="w-9 h-9 rounded-full bg-zinc-900 text-white flex items-center justify-center">
-    <span class="material-symbols-outlined">person</span>
+  <div class="flex items-center gap-3">
+    <button id="signOutButton" type="button">Sign Out</button>
+    <div class="w-9 h-9 rounded-full bg-zinc-900 text-white flex items-center justify-center">
+      <span class="material-symbols-outlined">person</span>
+    </div>
   </div>
 </header>
 
-<main class="pt-20 px-5 space-y-6 mx-auto">
+<main
+  id="dashboardMain"
+  style="display:none"
+  class="pt-20 px-5 space-y-6 mx-auto">
 
   <!-- HOME VIEW -->
   <section id="homeView" class="page-view active space-y-6">
@@ -114,7 +239,6 @@ button:disabled {
       <span class="text-xs text-gray-500">Demo dashboard</span>
     </div>
 
-    <!-- HONEST METRIC CARDS -->
     <div class="grid grid-cols-2 gap-4">
 
       <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
@@ -151,7 +275,6 @@ button:disabled {
 
     </div>
 
-    <!-- AI STATUS -->
     <div class="glass-card border border-white rounded-xl p-6 premium-shadow">
       <div class="flex items-center justify-between">
         <h3 class="text-xl">AI Concierge</h3>
@@ -162,14 +285,14 @@ button:disabled {
         Your AI receptionist is connected. Start a conversation to test the assistant.
       </p>
 
-      <button onclick="showView('concierge')"
+      <button
+        onclick="showView('concierge')"
         class="mt-5 bg-black text-white rounded-lg px-5 py-3 text-sm font-semibold">
         Open AI Concierge
         <span class="material-symbols-outlined text-sm align-middle ml-1">arrow_forward</span>
       </button>
     </div>
 
-    <!-- PERFORMANCE EMPTY STATE -->
     <div class="glass-card border border-white rounded-xl p-6 premium-shadow">
       <h3 class="text-xl">Growth Performance</h3>
 
@@ -213,7 +336,8 @@ button:disabled {
         Clinic services, prices, opening hours and appointment availability have not yet been configured. The assistant cannot confirm appointments.
       </p>
 
-      <div id="chatMessages"
+      <div
+        id="chatMessages"
         class="chat-scroll space-y-4 max-h-[430px] min-h-[220px] overflow-y-auto p-1"
         aria-live="polite">
 
@@ -315,7 +439,10 @@ button:disabled {
 </main>
 
 <!-- BOTTOM NAVIGATION -->
-<nav class="fixed bottom-0 w-full z-50 bg-white/95 backdrop-blur-xl border-t border-gray-200/70 h-20 px-3 flex justify-around items-center">
+<nav
+  id="dashboardNav"
+  style="display:none"
+  class="fixed bottom-0 w-full z-50 bg-white/95 backdrop-blur-xl border-t border-gray-200/70 h-20 px-3 flex justify-around items-center">
 
   <button data-view="home"
     class="nav-link active flex flex-col items-center justify-center gap-1 w-1/4">
@@ -406,8 +533,7 @@ button:disabled {
 
   // --------------------------------
   // GROQ CHAT INTEGRATION
-  // Existing Cloudflare endpoint:
-  // POST /api/chat
+  // Cloudflare endpoint: POST /api/chat
   // --------------------------------
 
   const form = document.getElementById("chatForm");
@@ -451,7 +577,6 @@ button:disabled {
     message.className =
       "text-sm leading-relaxed whitespace-pre-wrap break-words";
 
-    // textContent prevents assistant/user text from being interpreted as HTML.
     message.textContent = content;
 
     bubble.append(label, message);
@@ -531,11 +656,9 @@ button:disabled {
       });
 
       renderMessage("assistant", data.reply);
-
       statusEl.textContent = "AI response received.";
 
     } catch (error) {
-      // Remove the failed user message from API history.
       history.pop();
 
       renderMessage(
@@ -550,6 +673,177 @@ button:disabled {
       input.focus();
     }
   });
+
+})();
+</script>
+
+<!-- SUPABASE AUTHENTICATION -->
+<script>
+(() => {
+  "use strict";
+
+  const SUPABASE_URL =
+    "https://jrrtaswikhjetodxbwjr.supabase.co";
+
+  // Replace this placeholder with your Supabase publishable key.
+  // Never put a service_role key in frontend code.
+  const SUPABASE_PUBLISHABLE_KEY =
+    "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
+
+  const authScreen = document.getElementById("authScreen");
+  const loginForm = document.getElementById("loginForm");
+  const loginEmail = document.getElementById("loginEmail");
+  const loginPassword = document.getElementById("loginPassword");
+  const loginButton = document.getElementById("loginButton");
+  const authStatus = document.getElementById("authStatus");
+
+  const dashboardHeader = document.getElementById("dashboardHeader");
+  const dashboardMain = document.getElementById("dashboardMain");
+  const dashboardNav = document.getElementById("dashboardNav");
+  const signOutButton = document.getElementById("signOutButton");
+
+  function showLogin(message = "") {
+    authScreen.style.display = "flex";
+    dashboardHeader.style.display = "none";
+    dashboardMain.style.display = "none";
+    dashboardNav.style.display = "none";
+
+    authStatus.textContent = message;
+  }
+
+  function showDashboard() {
+    authScreen.style.display = "none";
+    dashboardHeader.style.display = "flex";
+    dashboardMain.style.display = "block";
+    dashboardNav.style.display = "flex";
+  }
+
+  if (
+    !window.supabase ||
+    typeof window.supabase.createClient !== "function"
+  ) {
+    showLogin("Authentication library could not load. Refresh the page and try again.");
+    return;
+  }
+
+  if (
+    !SUPABASE_PUBLISHABLE_KEY ||
+    SUPABASE_PUBLISHABLE_KEY === "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE"
+  ) {
+    showLogin("Add your Supabase publishable key in the website code first.");
+    loginButton.disabled = true;
+    return;
+  }
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+  // --------------------------------
+  // ADMIN LOGIN
+  // --------------------------------
+
+  loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value;
+
+    if (!email || !password) {
+      authStatus.textContent = "Enter your email and password.";
+      return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.textContent = "Signing in...";
+    authStatus.textContent = "Verifying administrator credentials...";
+
+    try {
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
+      if (error) throw error;
+
+      if (!data.session) {
+        throw new Error("Login session could not be created.");
+      }
+
+      loginPassword.value = "";
+      showDashboard();
+
+    } catch (error) {
+      authStatus.textContent =
+        error.message || "Login failed. Please check your credentials.";
+    } finally {
+      loginButton.disabled = false;
+      loginButton.textContent = "Sign In";
+    }
+  });
+
+  // --------------------------------
+  // RESTORE EXISTING LOGIN SESSION
+  // --------------------------------
+
+  async function initializeAuth() {
+    try {
+      const { data, error } =
+        await supabaseClient.auth.getSession();
+
+      if (error) throw error;
+
+      if (data.session) {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+
+    } catch (error) {
+      showLogin("Unable to verify your session. Please sign in again.");
+    }
+  }
+
+  // --------------------------------
+  // AUTH STATE CHANGES
+  // --------------------------------
+
+  supabaseClient.auth.onAuthStateChange(
+    (event, session) => {
+      if (session) {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+    }
+  );
+
+  // --------------------------------
+  // SIGN OUT
+  // --------------------------------
+
+  signOutButton.addEventListener("click", async () => {
+    signOutButton.disabled = true;
+    signOutButton.textContent = "Signing out...";
+
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) throw error;
+
+      showLogin("You have signed out.");
+
+    } catch (error) {
+      alert("Sign out failed: " + error.message);
+    } finally {
+      signOutButton.disabled = false;
+      signOutButton.textContent = "Sign Out";
+    }
+  });
+
+  initializeAuth();
 
 })();
 </script>
