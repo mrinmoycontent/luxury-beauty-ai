@@ -1,48 +1,44 @@
 
 const SYSTEM_PROMPT = `
-You are Glow Beauty AI, a friendly and professional AI receptionist for a beauty clinic.
-
-VERIFIED INFORMATION RULE:
-- The clinic's verified treatment list, service catalogue, prices, discounts, packages and opening hours are not connected yet.
-- Never guess, infer or assume that the clinic offers a particular treatment or service.
-- Never use general beauty industry knowledge to claim that this clinic offers something.
-- Do not suggest example treatments unless the customer mentions them first.
-- If asked about a treatment, service, price, discount, package or opening hours, explain that verified clinic information is not available in this chat.
-- Never say a treatment is popular, commonly offered or likely available as a substitute for confirming clinic availability.
-- Never invent clinic contact details.
+You are Glow Beauty AI, a friendly and professional AI assistant for a beauty clinic.
 
 YOUR ROLE:
-- Welcome customers.
-- Answer general beauty-related questions when appropriate.
-- Answer clinic-specific questions only when verified information is provided.
-- Communicate naturally and professionally.
+- Welcome customers and answer general beauty and skincare questions.
+- Provide helpful, general educational information about skincare, beauty routines, ingredients, skin types and treatment concepts.
+- Answer clinic-specific questions only when verified clinic information is available.
+- Communicate naturally, clearly and professionally.
 
-SYSTEM LIMITATIONS:
-- The clinic booking calendar is NOT connected.
-- The customer enquiry database is NOT connected.
-- You cannot contact clinic employees.
-- You cannot forward, submit, record or save enquiries.
-- You cannot arrange callbacks.
-- You cannot check appointment availability.
-- You cannot confirm appointments.
+GENERAL BEAUTY QUESTIONS:
+- Answer general skincare and beauty education questions normally.
+- Examples include sunscreen, moisturising, dry skin, oily skin, sensitive skin, skincare routines, ingredients and general treatment explanations.
+- You may explain what a treatment such as HydraFacial generally involves if asked.
+- Do not imply that the clinic provides a treatment just because you explain it.
+- For medical concerns, avoid diagnosis and recommend consulting a qualified dermatologist or healthcare professional.
+- Never claim guaranteed results.
 
-STRICT RULES:
-1. Never invent appointment availability.
-2. Never confirm or reserve appointments.
-3. Never claim that an enquiry was forwarded or saved.
-4. Never promise that clinic staff will contact a customer.
-5. Never claim to have checked a calendar or external system.
-6. Never request phone numbers, email addresses or other personal details.
-7. Never invent services, prices, opening hours, discounts or clinic policies.
-8. For booking requests, explain that online booking is not connected and direct the customer to contact the clinic.
-9. Never repeat customers' personal contact information.
-10. Do not add speculative examples or unnecessary general facts to clinic-specific answers.
+VERIFIED CLINIC INFORMATION:
+- The clinic's verified treatment list, service catalogue, prices, discounts, packages and opening hours are not connected.
+- Never guess or assume that the clinic offers a particular treatment.
+- If asked what the clinic offers, whether it provides a specific service, or about clinic prices, explain that verified information is not available.
+- Never invent clinic contact details, policies or opening hours.
+
+BOOKING LIMITATIONS:
+- Online booking and the clinic appointment calendar are NOT connected.
+- You cannot check availability, reserve appointments, reschedule or cancel bookings.
+- For booking requests, explain that online booking is not connected and direct the customer to contact the clinic.
+
+OTHER LIMITATIONS:
+- The customer enquiry database is not connected.
+- You cannot contact clinic employees, forward enquiries, save enquiries or arrange callbacks.
+- Never claim an enquiry has been submitted or that clinic staff will contact the customer.
+- Never request phone numbers, email addresses or other personal details.
 
 RESPONSE STYLE:
 - Friendly, concise and professional.
-- Usually respond in 1–3 short sentences.
-- Be transparent when information is unavailable.
-- Never make promises the application cannot fulfil.
+- Usually answer in 1–4 short paragraphs.
+- Answer the actual question instead of repeating generic disclaimers.
+- Do not use clinic-service disclaimers for general beauty education questions.
+- Be transparent whenever clinic-specific information is unavailable.
 `;
 
 function jsonResponse(data, status = 200) {
@@ -55,12 +51,10 @@ function jsonResponse(data, status = 200) {
   });
 }
 
-// Detect email addresses.
 function containsEmail(text) {
   return /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(text);
 }
 
-// Detect phone numbers containing at least 10 digits.
 function containsPhoneNumber(text) {
   const matches = text.match(
     /(?:\+?\d[\d\s().-]{7,}\d)/g
@@ -71,7 +65,6 @@ function containsPhoneNumber(text) {
   );
 }
 
-// Remove contact details before sending conversation history to Groq.
 function redactPersonalInformation(text) {
   return text
     .replace(
@@ -80,27 +73,72 @@ function redactPersonalInformation(text) {
     )
     .replace(
       /(?:\+?\d[\d\s().-]{7,}\d)/g,
-      (value) =>
+      value =>
         value.replace(/\D/g, "").length >= 10
           ? "[phone number redacted]"
           : value
     );
 }
 
-// Detect appointment and booking requests.
-function isBookingRequest(text) {
-  return /\b(book|booking|appointment|appointments|reserve|reservation|reservations|availability|available slot|time slot|schedule|reschedule|cancel my appointment|confirm my appointment|confirm the booking)\b/i.test(text);
+function normalizeText(text) {
+  return text
+    .toLowerCase()
+    .replace(/[’']/g, "'")
+    .replace(/[^\w\s'-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-// Detect clinic service and pricing questions.
-// These receive a fixed response without using Groq.
-function isClinicServiceOrPricingRequest(text) {
-  return /\b(service|services|treatment|treatments|facial|facials|hydrafacial|hydra facial|waxing|skincare|skin care|body treatment|body treatments|laser|peel|peels|botox|filler|fillers|price|prices|pricing|cost|costs|charge|charges|discount|discounts|package|packages|menu|offered|offer|available at this clinic|does the clinic|do you provide|what do you offer|what does the clinic offer)\b/i.test(text);
+// Only explicit appointment-related requests trigger this response.
+function isBookingRequest(text) {
+  const patterns = [
+    /\b(book|booking|reserve|reservation|reschedule|cancel)\b.{0,60}\b(appointment|slot|session|visit)\b/,
+    /\b(appointment|slot|session|visit)\b.{0,60}\b(book|booking|reserve|reservation|reschedule|cancel)\b/,
+    /\b(check|confirm)\b.{0,40}\b(appointment|booking|availability|available slots?|time slots?)\b/,
+    /\b(available slots?|availability|time slots?)\b/,
+    /\b(make|schedule)\b.{0,30}\b(an appointment|a booking|a reservation)\b/,
+    /\bcan i (come|visit|book|schedule)\b/,
+    /\bwhen can i (book|visit|come in)\b/
+  ];
+
+  return patterns.some(pattern => pattern.test(text));
+}
+
+// Detect explicit clinic-specific service questions.
+// General skincare education and treatment explanations are allowed.
+function isClinicServiceQuestion(text) {
+  const patterns = [
+    /\bwhat (services|treatments|procedures) do you offer\b/,
+    /\bwhat (services|treatments|procedures) does (the )?clinic offer\b/,
+    /\bwhich (services|treatments|procedures) are available\b/,
+    /\bdoes (the )?clinic (offer|provide|perform|have)\b/,
+    /\bdo you (offer|provide|perform|have)\b/,
+    /\bis (the )?clinic offering\b/,
+    /\bdo you have (hydrafacial|hydra facial|botox|fillers?|laser treatments?|chemical peels?)\b/,
+    /\bis (hydrafacial|hydra facial|botox|filler|laser treatment|chemical peel) available (at|in) (your|the) clinic\b/,
+    /\bwhat is your (service|treatment) menu\b/,
+    /\bshow me your (service|treatment) list\b/
+  ];
+
+  return patterns.some(pattern => pattern.test(text));
+}
+
+// Pricing questions are clinic-specific even if they mention a general treatment.
+function isPricingQuestion(text) {
+  const patterns = [
+    /\b(price|prices|pricing|cost|costs|charge|charges|fee|fees)\b/,
+    /\bhow much\b/,
+    /\bwhat does .{1,80} cost\b/,
+    /\bhow expensive\b/,
+    /\bdiscounts?\b/,
+    /\b(packages?|offers?)\b.{0,40}\b(price|cost|discount|fee)\b/
+  ];
+
+  return patterns.some(pattern => pattern.test(text));
 }
 
 export async function onRequestPost({ request, env }) {
   try {
-    // Check Groq configuration.
     if (!env.GROQ_API_KEY) {
       return jsonResponse(
         { error: "Groq API key is not configured." },
@@ -108,7 +146,6 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Parse request.
     let body;
 
     try {
@@ -122,7 +159,6 @@ export async function onRequestPost({ request, env }) {
 
     const messages = body.messages;
 
-    // Validate conversation.
     if (
       !Array.isArray(messages) ||
       messages.length === 0 ||
@@ -134,7 +170,6 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Validate each message.
     for (const message of messages) {
       if (
         !message ||
@@ -150,7 +185,6 @@ export async function onRequestPost({ request, env }) {
       }
     }
 
-    // Find the latest customer message.
     const latestUserMessage = [...messages]
       .reverse()
       .find(message => message.role === "user");
@@ -163,9 +197,9 @@ export async function onRequestPost({ request, env }) {
     }
 
     const customerText = latestUserMessage.content.trim();
+    const normalizedText = normalizeText(customerText);
 
-    // PRIVACY PROTECTION.
-    // Do not send messages containing contact details to Groq.
+    // Privacy protection.
     if (
       containsEmail(customerText) ||
       containsPhoneNumber(customerText)
@@ -177,9 +211,8 @@ export async function onRequestPost({ request, env }) {
       });
     }
 
-    // BOOKING PROTECTION.
-    // This fixed response does not consume a Groq API request.
-    if (isBookingRequest(customerText)) {
+    // Booking protection.
+    if (isBookingRequest(normalizedText)) {
       return jsonResponse({
         success: true,
         reply:
@@ -187,10 +220,11 @@ export async function onRequestPost({ request, env }) {
       });
     }
 
-    // SERVICE AND PRICING PROTECTION.
-    // Do not let the AI guess clinic-specific information.
-    // This fixed response does not consume a Groq API request.
-    if (isClinicServiceOrPricingRequest(customerText)) {
+    // Clinic service and pricing protection.
+    if (
+      isClinicServiceQuestion(normalizedText) ||
+      isPricingQuestion(normalizedText)
+    ) {
       return jsonResponse({
         success: true,
         reply:
@@ -198,7 +232,8 @@ export async function onRequestPost({ request, env }) {
       });
     }
 
-    // Redact personal information in earlier conversation messages.
+    // Send the conversation to Groq for general beauty questions.
+    // Redact contact details from earlier messages as well.
     const safeMessages = messages.map(message => ({
       role: message.role,
       content: redactPersonalInformation(
@@ -206,16 +241,6 @@ export async function onRequestPost({ request, env }) {
       )
     }));
 
-    // Prepare Groq conversation.
-    const groqMessages = [
-      {
-        role: "system",
-        content: SYSTEM_PROMPT
-      },
-      ...safeMessages
-    ];
-
-    // Call the existing Groq API.
     const groqResponse = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -226,14 +251,19 @@ export async function onRequestPost({ request, env }) {
         },
         body: JSON.stringify({
           model: "openai/gpt-oss-20b",
-          messages: groqMessages,
+          messages: [
+            {
+              role: "system",
+              content: SYSTEM_PROMPT
+            },
+            ...safeMessages
+          ],
           temperature: 0.2,
           max_tokens: 400
         })
       }
     );
 
-    // Handle Groq errors.
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
 
@@ -249,11 +279,8 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Parse Groq response.
     const result = await groqResponse.json();
-
-    const reply =
-      result?.choices?.[0]?.message?.content;
+    const reply = result?.choices?.[0]?.message?.content;
 
     if (
       typeof reply !== "string" ||
