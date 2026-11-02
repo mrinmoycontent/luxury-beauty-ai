@@ -7,7 +7,7 @@
 <title>Luxury Beauty AI | Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -181,6 +181,16 @@ button:disabled {
       <p id="authStatus" class="auth-status text-xs text-center text-gray-500"
          role="status" aria-live="polite"></p>
     </form>
+
+    <!-- PUBLIC CUSTOMER BOOKING LINK -->
+    <div class="mt-6 pt-5 border-t border-gray-100 text-center">
+      <p class="text-sm text-gray-600 mb-3">Looking to book an appointment?</p>
+      <a href="/booking.html"
+        class="inline-flex w-full items-center justify-center gap-2 bg-black text-white rounded-lg py-3 px-5 font-semibold text-sm">
+        Book an Appointment
+        <span class="material-symbols-outlined text-base">arrow_forward</span>
+      </a>
+    </div>
 
     <p class="text-xs text-center text-gray-400 mt-6">
       Secure administrator access
