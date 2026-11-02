@@ -101,13 +101,6 @@ button:disabled { cursor: not-allowed; opacity: .5; }
       <p id="authStatus" class="auth-status text-xs text-center text-gray-500" role="status" aria-live="polite"></p>
     </form>
 
-    <div class="text-center mt-5">
-      <p class="text-sm text-gray-600">
-        New staff member?
-        <button id="createAccountButton" type="button" class="auth-link">Create Account</button>
-      </p>
-    </div>
-
     <div class="mt-6 pt-5 border-t border-gray-100 text-center">
       <p class="text-sm text-gray-600 mb-3">Looking to book an appointment?</p>
       <a href="/booking.html" class="inline-flex w-full items-center justify-center gap-2 bg-black text-white rounded-lg py-3 px-5 font-semibold text-sm">
@@ -250,6 +243,21 @@ button:disabled { cursor: not-allowed; opacity: .5; }
         <h2 id="greeting" class="text-2xl mt-2">Welcome</h2>
       </div>
       <span class="text-xs text-gray-500">Demo dashboard</span>
+    </div>
+
+    <!-- STAFF ACCOUNT MANAGEMENT -->
+    <div class="glass-card border border-white rounded-xl p-4 premium-shadow flex items-center justify-between gap-3">
+      <div>
+        <h3 class="font-semibold text-sm">Staff Management</h3>
+        <p class="text-xs text-gray-500 mt-1">Create accounts for authorised staff members.</p>
+      </div>
+      <button
+        id="createAccountButton"
+        type="button"
+        class="bg-black text-white rounded-lg px-4 py-3 text-xs font-semibold whitespace-nowrap">
+        <span class="material-symbols-outlined text-sm align-middle mr-1">person_add</span>
+        Create Staff
+      </button>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
@@ -614,7 +622,9 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 
   window.glowSupabaseClient = supabaseClient;
 
-  // Open staff registration only when an administrator session exists.
+  // Only the authenticated system administrator can open staff registration.
+  const ADMIN_USER_ID = "f28c8ccc-6aeb-46db-b388-a1238030544d";
+
   createAccountButton.addEventListener("click", async () => {
     createStaffForm.reset();
     createStaffStatus.textContent = "";
@@ -623,7 +633,12 @@ button:disabled { cursor: not-allowed; opacity: .5; }
       const { data, error } = await supabaseClient.auth.getSession();
 
       if (error || !data.session) {
-        showLogin("Please sign in as the system administrator first.");
+        showLogin("Please sign in again.");
+        return;
+      }
+
+      if (data.session.user.id !== ADMIN_USER_ID) {
+        alert("Only the system administrator can create staff accounts.");
         return;
       }
 
@@ -632,11 +647,11 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 
     } catch (error) {
       console.error("Session verification failed:", error);
-      showLogin("Unable to verify your session. Please sign in again.");
+      alert("Unable to verify administrator access.");
     }
   });
 
-  createAccountBack.addEventListener("click", () => showLogin());
+  createAccountBack.addEventListener("click", () => showDashboard());
 
   // Create staff account through the protected Cloudflare Function.
   createStaffForm.addEventListener("submit", async event => {
