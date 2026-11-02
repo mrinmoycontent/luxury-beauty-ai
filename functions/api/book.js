@@ -1,14 +1,28 @@
 
+const ALLOWED_ORIGINS = new Set([
+  "https://luxury-beauty-ai-5zz.pages.dev"
+]);
+
 export async function onRequestPost({ request, env }) {
+  const origin = request.headers.get("Origin");
+
   const headers = {
     "Content-Type": "application/json",
-    "Cache-Control": "no-store"
+    "Cache-Control": "no-store",
+    "Vary": "Origin"
   };
 
   const response = (status, body) =>
     new Response(JSON.stringify(body), { status, headers });
 
   try {
+    if (!origin || !ALLOWED_ORIGINS.has(origin)) {
+      return response(403, {
+        success: false,
+        message: "Request not allowed."
+      });
+    }
+
     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
       return response(500, {
         success: false,
@@ -16,8 +30,7 @@ export async function onRequestPost({ request, env }) {
       });
     }
 
-    const contentType = request.headers.get("Content-Type") || "";
-    if (!contentType.includes("application/json")) {
+    if (!(request.headers.get("Content-Type") || "").includes("application/json")) {
       return response(415, {
         success: false,
         message: "JSON content type is required."
@@ -25,6 +38,14 @@ export async function onRequestPost({ request, env }) {
     }
 
     const data = await request.json();
+
+    // Honeypot: silently reject automated submissions.
+    if (String(data.website || "").trim()) {
+      return response(400, {
+        success: false,
+        message: "Invalid request."
+      });
+    }
 
     const fullName = String(data.full_name || "").trim();
     const email = String(data.email || "").trim().toLowerCase();
@@ -81,7 +102,7 @@ export async function onRequestPost({ request, env }) {
     );
 
     if (!customerSearch.ok) {
-      throw new Error("Could not look up customer.");
+      throw new Error("Customer lookup failed.");
     }
 
     const existingCustomers = await customerSearch.json();
@@ -89,8 +110,24 @@ export async function onRequestPost({ request, env }) {
 
     if (existingCustomers.length > 0) {
       customerId = existingCustomers[0].id;
+
+      // Keep the customer's latest contact details.
+      const customerUpdate = await fetch(
+        `${supabaseUrl}/rest/v1/customers?id=eq.${encodeURIComponent(customerId)}`,
+        {
+          method: "PATCH",
+          headers: dbHeaders,
+          body: JSON.stringify({
+            full_name: fullName,
+            phone
+          })
+        }
+      );
+
+      if (!customerUpdate.ok) {
+        throw new Error("Customer update failed.");
+      }
     } else {
-      // Create a new customer.
       const customerCreate = await fetch(
         `${supabaseUrl}/rest/v1/customers`,
         {
@@ -108,19 +145,19 @@ export async function onRequestPost({ request, env }) {
       );
 
       if (!customerCreate.ok) {
-        throw new Error("Could not create customer.");
+        throw new Error("Customer creation failed.");
       }
 
       const createdCustomers = await customerCreate.json();
 
       if (!createdCustomers.length) {
-        throw new Error("Customer creation returned no record.");
+        throw new Error("Customer record was not returned.");
       }
 
       customerId = createdCustomers[0].id;
     }
 
-    // Create the appointment request as pending.
+    // Save the request as pending. It is not a confirmed appointment.
     const bookingCreate = await fetch(
       `${supabaseUrl}/rest/v1/appointments`,
       {
@@ -141,13 +178,13 @@ export async function onRequestPost({ request, env }) {
     );
 
     if (!bookingCreate.ok) {
-      throw new Error("Could not save appointment.");
+      throw new Error("Appointment creation failed.");
     }
 
     const bookings = await bookingCreate.json();
 
     if (!bookings.length) {
-      throw new Error("Booking creation returned no record.");
+      throw new Error("Appointment record was not returned.");
     }
 
     return response(201, {
