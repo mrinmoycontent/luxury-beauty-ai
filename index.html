@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="light">
 <head>
@@ -400,6 +401,10 @@ button:disabled {
       <div id="customerList" class="mt-5 space-y-3">
         <p class="text-sm text-gray-500">Loading customer records...</p>
       </div>
+
+      <!-- FIX: STATUS ELEMENT REQUIRED BY customers.js -->
+      <p id="customerStatus" class="text-xs text-gray-500 mt-3"
+         role="status" aria-live="polite"></p>
     </div>
 
     <div class="glass-card border border-white rounded-xl p-6 premium-shadow">
