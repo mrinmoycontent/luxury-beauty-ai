@@ -35,84 +35,172 @@
     }
   </style>
 </head>
+
 <body class="min-h-screen px-4 py-10">
 
   <main class="max-w-xl mx-auto">
+
     <header class="text-center mb-8">
-      <p class="text-xs uppercase tracking-[.25em] text-gray-500">Glow Beauty AI</p>
+      <p class="text-xs uppercase tracking-[.25em] text-gray-500">
+        Glow Beauty AI
+      </p>
+
       <h1 class="text-4xl mt-3">Book an Appointment</h1>
+
       <p class="text-sm text-gray-500 mt-3">
         Send us your appointment request. Our team will contact you to confirm.
       </p>
     </header>
 
     <section class="card p-6 sm:p-8">
+
       <form id="bookingForm" class="space-y-5">
 
         <div>
-          <label for="fullName" class="block text-sm font-medium mb-2">Full name</label>
-          <input id="fullName" name="full_name" class="field"
-            type="text" maxlength="100" autocomplete="name" required>
+          <label for="fullName" class="block text-sm font-medium mb-2">
+            Full name
+          </label>
+
+          <input
+            id="fullName"
+            name="full_name"
+            class="field"
+            type="text"
+            maxlength="100"
+            autocomplete="name"
+            required
+          >
         </div>
 
         <div>
-          <label for="email" class="block text-sm font-medium mb-2">Email address</label>
-          <input id="email" name="email" class="field"
-            type="email" maxlength="254" autocomplete="email" required>
+          <label for="email" class="block text-sm font-medium mb-2">
+            Email address
+          </label>
+
+          <input
+            id="email"
+            name="email"
+            class="field"
+            type="email"
+            maxlength="254"
+            autocomplete="email"
+            required
+          >
         </div>
 
         <div>
-          <label for="phone" class="block text-sm font-medium mb-2">Phone number</label>
-          <input id="phone" name="phone" class="field"
-            type="tel" maxlength="20" autocomplete="tel"
-            placeholder="+91 9876543210" required>
+          <label for="phone" class="block text-sm font-medium mb-2">
+            Phone number
+          </label>
+
+          <input
+            id="phone"
+            name="phone"
+            class="field"
+            type="tel"
+            maxlength="20"
+            autocomplete="off"
+            placeholder="Enter your mobile number"
+            required
+          >
         </div>
 
         <div>
-          <label for="service" class="block text-sm font-medium mb-2">Requested service</label>
-          <input id="service" name="service_name" class="field"
-            type="text" maxlength="150"
-            placeholder="Enter the service you are interested in" required>
+          <label for="service" class="block text-sm font-medium mb-2">
+            Requested service
+          </label>
+
+          <input
+            id="service"
+            name="service_name"
+            class="field"
+            type="text"
+            maxlength="150"
+            placeholder="Enter the service you are interested in"
+            required
+          >
+
           <p class="text-xs text-gray-500 mt-2">
             Please enter the treatment or service you would like to enquire about.
           </p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
           <div>
-            <label for="appointmentDate" class="block text-sm font-medium mb-2">Preferred date</label>
-            <input id="appointmentDate" name="appointment_date"
-              class="field" type="date" required>
+            <label for="appointmentDate" class="block text-sm font-medium mb-2">
+              Preferred date
+            </label>
+
+            <input
+              id="appointmentDate"
+              name="appointment_date"
+              class="field"
+              type="date"
+              required
+            >
           </div>
 
           <div>
-            <label for="appointmentTime" class="block text-sm font-medium mb-2">Preferred time</label>
-            <input id="appointmentTime" name="appointment_time"
-              class="field" type="time" required>
+            <label for="appointmentTime" class="block text-sm font-medium mb-2">
+              Preferred time
+            </label>
+
+            <input
+              id="appointmentTime"
+              name="appointment_time"
+              class="field"
+              type="time"
+              required
+            >
           </div>
+
         </div>
 
         <div>
-          <label for="notes" class="block text-sm font-medium mb-2">Additional notes (optional)</label>
-          <textarea id="notes" name="notes" class="field"
-            rows="3" maxlength="1000"
-            placeholder="Anything you would like us to know?"></textarea>
+          <label for="notes" class="block text-sm font-medium mb-2">
+            Additional notes (optional)
+          </label>
+
+          <textarea
+            id="notes"
+            name="notes"
+            class="field"
+            rows="3"
+            maxlength="1000"
+            placeholder="Anything you would like us to know?"
+          ></textarea>
         </div>
 
-        <!-- Honeypot field for basic bot filtering -->
+        <!-- Hidden honeypot field for basic bot filtering -->
         <div class="hidden" aria-hidden="true">
           <label for="website">Leave this field empty</label>
-          <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+          <input
+            id="website"
+            name="website"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+          >
         </div>
 
-        <button id="submitBooking" type="submit"
-          class="w-full bg-black text-white rounded-lg py-4 font-semibold text-sm">
+        <button
+          id="submitBooking"
+          type="submit"
+          class="w-full bg-black text-white rounded-lg py-4 font-semibold text-sm"
+        >
           Submit Appointment Request
         </button>
 
-        <p id="bookingStatus" class="text-sm text-center text-gray-600"
-          role="status" aria-live="polite"></p>
+        <p
+          id="bookingStatus"
+          class="text-sm text-center text-gray-600"
+          role="status"
+          aria-live="polite"
+        ></p>
+
       </form>
+
     </section>
 
     <p class="text-xs text-center text-gray-500 mt-6">
@@ -120,10 +208,14 @@
     </p>
 
     <div class="text-center mt-5">
-      <a href="/" class="text-sm underline text-gray-600">Administrator login</a>
+      <a href="/" class="text-sm underline text-gray-600">
+        Administrator login
+      </a>
     </div>
+
   </main>
 
   <script src="/booking.js"></script>
+
 </body>
 </html>
