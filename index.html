@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="light">
 <head>
@@ -121,20 +120,57 @@ button:disabled { cursor: not-allowed; opacity: .5; }
   </div>
 </section>
 
-<!-- CREATE ACCOUNT INFORMATION -->
+<!-- CREATE STAFF ACCOUNT -->
 <section id="createAccountScreen" style="display:none">
   <div class="auth-card">
     <div class="text-center mb-8">
       <span class="material-symbols-outlined text-4xl gold-accent">person_add</span>
       <h1 class="text-3xl font-semibold mt-3">Create Account</h1>
-      <p class="text-sm text-gray-500 mt-2">Glow Beauty AI Administrator Access</p>
+      <p class="text-sm text-gray-500 mt-2">Glow Beauty AI Staff Registration</p>
     </div>
-    <p class="text-sm text-gray-600 leading-relaxed text-center">
-      Administrator accounts are restricted to authorised staff.
-      Please contact the system owner to request an account.
-    </p>
-    <div class="text-center mt-7">
-      <button id="createAccountBack" type="button" class="auth-link">Back to Sign In</button>
+
+    <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-3 mb-5">
+      <p class="text-xs text-yellow-900">
+        Administrator authorisation is required to create staff accounts.
+      </p>
+    </div>
+
+    <form id="createStaffForm" class="space-y-4">
+      <div>
+        <label for="staffName" class="block text-sm font-medium mb-2">Full Name</label>
+        <input id="staffName" class="auth-input" type="text"
+          maxlength="100" autocomplete="name"
+          placeholder="Enter staff name" required>
+      </div>
+
+      <div>
+        <label for="staffEmail" class="block text-sm font-medium mb-2">Email Address</label>
+        <input id="staffEmail" class="auth-input" type="email"
+          maxlength="254" autocomplete="email"
+          placeholder="Enter staff email" required>
+      </div>
+
+      <div>
+        <label for="staffPassword" class="block text-sm font-medium mb-2">Temporary Password</label>
+        <input id="staffPassword" class="auth-input" type="password"
+          minlength="12" autocomplete="new-password"
+          placeholder="Minimum 12 characters" required>
+      </div>
+
+      <button id="createStaffSubmit" type="submit"
+        class="w-full bg-black text-white rounded-lg py-3 font-semibold text-sm">
+        Create Staff Account
+      </button>
+
+      <p id="createStaffStatus"
+        class="auth-status text-xs text-center text-gray-500"
+        role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="text-center mt-6">
+      <button id="createAccountBack" type="button" class="auth-link">
+        Back to Sign In
+      </button>
     </div>
   </div>
 </section>
@@ -487,6 +523,14 @@ button:disabled { cursor: not-allowed; opacity: .5; }
   const createAccountScreen = document.getElementById("createAccountScreen");
   const createAccountButton = document.getElementById("createAccountButton");
   const createAccountBack = document.getElementById("createAccountBack");
+
+  const createStaffForm = document.getElementById("createStaffForm");
+  const staffName = document.getElementById("staffName");
+  const staffEmail = document.getElementById("staffEmail");
+  const staffPassword = document.getElementById("staffPassword");
+  const createStaffSubmit = document.getElementById("createStaffSubmit");
+  const createStaffStatus = document.getElementById("createStaffStatus");
+
   const forgotScreen = document.getElementById("forgotScreen");
   const resetScreen = document.getElementById("resetScreen");
 
@@ -563,16 +607,105 @@ button:disabled { cursor: not-allowed; opacity: .5; }
     return;
   }
 
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
   window.glowSupabaseClient = supabaseClient;
 
-  createAccountButton.addEventListener("click", () => {
-    hideAllScreens();
-    createAccountScreen.style.display = "flex";
+  // Open staff registration only when an administrator session exists.
+  createAccountButton.addEventListener("click", async () => {
+    createStaffForm.reset();
+    createStaffStatus.textContent = "";
+
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error || !data.session) {
+        showLogin("Please sign in as the system administrator first.");
+        return;
+      }
+
+      hideAllScreens();
+      createAccountScreen.style.display = "flex";
+
+    } catch (error) {
+      console.error("Session verification failed:", error);
+      showLogin("Unable to verify your session. Please sign in again.");
+    }
   });
 
   createAccountBack.addEventListener("click", () => showLogin());
 
+  // Create staff account through the protected Cloudflare Function.
+  createStaffForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const name = staffName.value.trim();
+    const email = staffEmail.value.trim();
+    const password = staffPassword.value;
+
+    if (!name || !email || password.length < 12) {
+      createStaffStatus.textContent =
+        "Please enter valid details and a password of at least 12 characters.";
+      return;
+    }
+
+    createStaffSubmit.disabled = true;
+    createStaffSubmit.textContent = "Creating Account...";
+    createStaffStatus.textContent = "Verifying administrator access...";
+
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error || !data.session) {
+        throw new Error("Your administrator session has expired. Sign in again.");
+      }
+
+      const response = await fetch("/api/create-staff", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${data.session.access_token}`
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password
+        })
+      });
+
+      let result;
+
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error("The server returned an invalid response.");
+      }
+
+      if (!response.ok) {
+        throw new Error(result.error || "Account creation failed.");
+      }
+
+      createStaffForm.reset();
+
+      createStaffStatus.textContent =
+        "Staff account created. The staff member can now sign in using the registered email and temporary password.";
+
+    } catch (error) {
+      console.error("Staff registration error:", error);
+
+      createStaffStatus.textContent = error.message ||
+        "Unable to create the account. Please try again.";
+
+    } finally {
+      createStaffSubmit.disabled = false;
+      createStaffSubmit.textContent = "Create Staff Account";
+    }
+  });
+
+  // Forgot password.
   forgotPassword.addEventListener("click", () => {
     forgotEmail.value = loginEmail.value.trim();
     showForgot();
@@ -586,7 +719,9 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 
   forgotForm.addEventListener("submit", async event => {
     event.preventDefault();
+
     const email = forgotEmail.value.trim();
+
     if (!email) {
       forgotStatus.textContent = "Please enter your email address.";
       forgotEmail.focus();
@@ -601,19 +736,28 @@ button:disabled { cursor: not-allowed; opacity: .5; }
       const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin
       });
+
       if (error) throw error;
-      forgotStatus.textContent = "If an account exists with this email, a password reset link will be sent. Please check your inbox and spam folder.";
+
+      forgotStatus.textContent =
+        "If an account exists with this email, a password reset link will be sent. Please check your inbox and spam folder.";
+
     } catch (error) {
       console.error("Password recovery request failed:", error);
-      forgotStatus.textContent = "We couldn't process your request right now. Please try again later.";
+
+      forgotStatus.textContent =
+        "We couldn't process your request right now. Please try again later.";
+
     } finally {
       sendResetButton.disabled = false;
       sendResetButton.textContent = "Send Reset Link";
     }
   });
 
+  // Administrator/staff login.
   loginForm.addEventListener("submit", async event => {
     event.preventDefault();
+
     const email = loginEmail.value.trim();
     const password = loginPassword.value;
 
@@ -627,35 +771,50 @@ button:disabled { cursor: not-allowed; opacity: .5; }
     authStatus.textContent = "Verifying your credentials...";
 
     try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
       if (error) throw error;
       if (!data.session) throw new Error("Login session could not be created.");
+
       loginPassword.value = "";
       showDashboard();
+
     } catch (error) {
       console.error("Sign-in failed:", error);
-      authStatus.textContent = "Unable to sign in. Please check your email and password.";
+
+      authStatus.textContent =
+        "Unable to sign in. Please check your email and password.";
+
     } finally {
       loginButton.disabled = false;
       loginButton.textContent = "Sign In";
     }
   });
 
+  // Password reset.
   resetForm.addEventListener("submit", async event => {
     event.preventDefault();
+
     const password = newPassword.value;
     const confirmation = confirmPassword.value;
 
     if (password.length < 8) {
-      resetStatus.textContent = "Your password must contain at least 8 characters.";
+      resetStatus.textContent =
+        "Your password must contain at least 8 characters.";
       return;
     }
+
     if (password !== confirmation) {
       resetStatus.textContent = "Your passwords do not match.";
       return;
     }
+
     if (!recoveryMode) {
-      resetStatus.textContent = "Your password reset session is invalid or expired. Request a new reset link.";
+      resetStatus.textContent =
+        "Your password reset session is invalid or expired. Request a new reset link.";
       return;
     }
 
@@ -664,37 +823,60 @@ button:disabled { cursor: not-allowed; opacity: .5; }
     resetStatus.textContent = "Updating your password...";
 
     try {
-      const { error } = await supabaseClient.auth.updateUser({ password });
+      const { error } = await supabaseClient.auth.updateUser({
+        password
+      });
+
       if (error) throw error;
 
       newPassword.value = "";
       confirmPassword.value = "";
+
       recoveryMode = false;
       recoveryHandled = true;
+
       await supabaseClient.auth.signOut();
-      showLogin("Your password has been updated. Please sign in with your new password.");
+
+      showLogin(
+        "Your password has been updated. Please sign in with your new password."
+      );
+
     } catch (error) {
       console.error("Password update failed:", error);
-      resetStatus.textContent = error.message || "Unable to update your password. Please try again.";
+
+      resetStatus.textContent =
+        error.message || "Unable to update your password. Please try again.";
+
     } finally {
       resetButton.disabled = false;
       resetButton.textContent = "Update Password";
     }
   });
 
+  // Restore existing login session.
   async function initializeAuth() {
     try {
       const { data, error } = await supabaseClient.auth.getSession();
+
       if (error) throw error;
       if (recoveryMode || recoveryHandled) return;
-      if (data.session) showDashboard();
-      else showLogin();
+
+      if (data.session) {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+
     } catch (error) {
       console.error("Session initialization failed:", error);
-      if (!recoveryMode && !recoveryHandled) showLogin("Unable to verify your session. Please sign in again.");
+
+      if (!recoveryMode && !recoveryHandled) {
+        showLogin("Unable to verify your session. Please sign in again.");
+      }
     }
   }
 
+  // Listen for login, logout and password recovery events.
   supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === "PASSWORD_RECOVERY") {
       recoveryMode = true;
@@ -702,23 +884,35 @@ button:disabled { cursor: not-allowed; opacity: .5; }
       showReset("Enter and confirm your new password.");
       return;
     }
+
     if (recoveryMode) return;
-    if (session) showDashboard();
-    else showLogin();
+
+    if (session) {
+      showDashboard();
+    } else {
+      showLogin();
+    }
   });
 
+  // Sign out.
   signOutButton.addEventListener("click", async () => {
     signOutButton.disabled = true;
     signOutButton.textContent = "Signing out...";
+
     try {
       const { error } = await supabaseClient.auth.signOut();
+
       if (error) throw error;
+
       recoveryMode = false;
       recoveryHandled = false;
+
       showLogin("You have signed out.");
+
     } catch (error) {
       console.error("Sign out failed:", error);
       alert("Sign out failed. Please try again.");
+
     } finally {
       signOutButton.disabled = false;
       signOutButton.textContent = "Sign Out";
