@@ -582,6 +582,328 @@ button:disabled {
       input.focus();
     }
   });
+  <!-- SUPABASE AUTHENTICATION -->
+<script>
+(() => {
+  "use strict";
+
+  const SUPABASE_URL =
+    "https://jrrtaswikhjetodxbwjr.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_SFj1LekmbDuAJS6voYEXVQ_JYE0rHvd";
+
+  const authScreen = document.getElementById("authScreen");
+  const forgotScreen = document.getElementById("forgotScreen");
+  const resetScreen = document.getElementById("resetScreen");
+
+  const loginForm = document.getElementById("loginForm");
+  const loginEmail = document.getElementById("loginEmail");
+  const loginPassword = document.getElementById("loginPassword");
+  const loginButton = document.getElementById("loginButton");
+  const forgotPassword = document.getElementById("forgotPassword");
+  const authStatus = document.getElementById("authStatus");
+
+  const forgotForm = document.getElementById("forgotForm");
+  const forgotEmail = document.getElementById("forgotEmail");
+  const sendResetButton = document.getElementById("sendResetButton");
+  const forgotStatus = document.getElementById("forgotStatus");
+  const backToLogin = document.getElementById("backToLogin");
+
+  const resetForm = document.getElementById("resetForm");
+  const newPassword = document.getElementById("newPassword");
+  const confirmPassword = document.getElementById("confirmPassword");
+  const resetButton = document.getElementById("resetButton");
+  const resetStatus = document.getElementById("resetStatus");
+
+  const dashboardHeader = document.getElementById("dashboardHeader");
+  const dashboardMain = document.getElementById("dashboardMain");
+  const dashboardNav = document.getElementById("dashboardNav");
+  const signOutButton = document.getElementById("signOutButton");
+
+  let recoveryMode = false;
+  let recoveryHandled = false;
+
+  function hideAllScreens() {
+    authScreen.style.display = "none";
+    forgotScreen.style.display = "none";
+    resetScreen.style.display = "none";
+    dashboardHeader.style.display = "none";
+    dashboardMain.style.display = "none";
+    dashboardNav.style.display = "none";
+  }
+
+  function showLogin(message = "") {
+    hideAllScreens();
+    authScreen.style.display = "flex";
+    authStatus.textContent = message;
+  }
+
+  function showForgot(message = "") {
+    hideAllScreens();
+    forgotScreen.style.display = "flex";
+    forgotStatus.textContent = message;
+    forgotEmail.focus();
+  }
+
+  function showReset(message = "") {
+    hideAllScreens();
+    resetScreen.style.display = "flex";
+    resetStatus.textContent = message;
+  }
+
+  function showDashboard() {
+    hideAllScreens();
+    dashboardHeader.style.display = "flex";
+    dashboardMain.style.display = "block";
+    dashboardNav.style.display = "flex";
+  }
+
+  if (!window.supabase ||
+      typeof window.supabase.createClient !== "function") {
+    showLogin("Authentication service could not load. Refresh and try again.");
+    return;
+  }
+
+  if (!SUPABASE_PUBLISHABLE_KEY) {
+    showLogin("Authentication configuration is missing.");
+    return;
+  }
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+  // Share the authenticated Supabase client with customers.js.
+  window.glowSupabaseClient = supabaseClient;
+
+  // FORGOT PASSWORD SCREEN
+  forgotPassword.addEventListener("click", () => {
+    forgotEmail.value = loginEmail.value.trim();
+    showForgot();
+  });
+
+  backToLogin.addEventListener("click", () => {
+    forgotForm.reset();
+    forgotStatus.textContent = "";
+    showLogin();
+  });
+
+  // SEND PASSWORD RESET EMAIL
+  forgotForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email = forgotEmail.value.trim();
+
+    if (!email) {
+      forgotStatus.textContent = "Please enter your email address.";
+      forgotEmail.focus();
+      return;
+    }
+
+    sendResetButton.disabled = true;
+    sendResetButton.textContent = "Sending...";
+    forgotStatus.textContent = "Please wait...";
+
+    try {
+      const { error } =
+        await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin
+        });
+
+      if (error) throw error;
+
+      forgotStatus.textContent =
+        "If an account exists with this email, a password reset link will be sent. Please check your inbox and spam folder.";
+
+    } catch (error) {
+      console.error("Password recovery request failed:", error);
+      forgotStatus.textContent =
+        "We couldn't process your request right now. Please try again later.";
+
+    } finally {
+      sendResetButton.disabled = false;
+      sendResetButton.textContent = "Send Reset Link";
+    }
+  });
+
+  // ADMIN LOGIN
+  loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value;
+
+    if (!email || !password) {
+      authStatus.textContent = "Enter your email and password.";
+      return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.textContent = "Signing in...";
+    authStatus.textContent = "Verifying your credentials...";
+
+    try {
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
+      if (error) throw error;
+
+      if (!data.session) {
+        throw new Error("Login session could not be created.");
+      }
+
+      loginPassword.value = "";
+      showDashboard();
+
+    } catch (error) {
+      console.error("Sign-in failed:", error);
+      authStatus.textContent =
+        "Unable to sign in. Please check your email and password.";
+
+    } finally {
+      loginButton.disabled = false;
+      loginButton.textContent = "Sign In";
+    }
+  });
+
+  // CREATE NEW PASSWORD
+  resetForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const password = newPassword.value;
+    const confirmation = confirmPassword.value;
+
+    if (password.length < 8) {
+      resetStatus.textContent =
+        "Your password must contain at least 8 characters.";
+      return;
+    }
+
+    if (password !== confirmation) {
+      resetStatus.textContent = "Your passwords do not match.";
+      return;
+    }
+
+    if (!recoveryMode) {
+      resetStatus.textContent =
+        "Your password reset session is invalid or expired. Request a new reset link.";
+      return;
+    }
+
+    resetButton.disabled = true;
+    resetButton.textContent = "Updating...";
+    resetStatus.textContent = "Updating your password...";
+
+    try {
+      const { error } = await supabaseClient.auth.updateUser({
+        password: password
+      });
+
+      if (error) throw error;
+
+      newPassword.value = "";
+      confirmPassword.value = "";
+
+      recoveryMode = false;
+      recoveryHandled = true;
+
+      await supabaseClient.auth.signOut();
+
+      showLogin(
+        "Your password has been updated. Please sign in with your new password."
+      );
+
+    } catch (error) {
+      console.error("Password update failed:", error);
+      resetStatus.textContent =
+        error.message || "Unable to update your password. Please try again.";
+
+    } finally {
+      resetButton.disabled = false;
+      resetButton.textContent = "Update Password";
+    }
+  });
+
+  // RESTORE EXISTING SESSION
+  async function initializeAuth() {
+    try {
+      const { data, error } =
+        await supabaseClient.auth.getSession();
+
+      if (error) throw error;
+
+      if (recoveryMode || recoveryHandled) return;
+
+      if (data.session) {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+
+    } catch (error) {
+      if (!recoveryMode && !recoveryHandled) {
+        showLogin("Unable to verify your session. Please sign in again.");
+      }
+    }
+  }
+
+  // AUTH STATE CHANGES
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY") {
+      recoveryMode = true;
+      recoveryHandled = true;
+      showReset("Enter and confirm your new password.");
+      return;
+    }
+
+    if (recoveryMode) return;
+
+    if (session) {
+      showDashboard();
+    } else {
+      showLogin();
+    }
+  });
+
+  // SIGN OUT
+  signOutButton.addEventListener("click", async () => {
+    signOutButton.disabled = true;
+    signOutButton.textContent = "Signing out...";
+
+    try {
+      const { error } =
+        await supabaseClient.auth.signOut();
+
+      if (error) throw error;
+
+      recoveryMode = false;
+      recoveryHandled = false;
+      showLogin("You have signed out.");
+
+    } catch (error) {
+      alert("Sign out failed. Please try again.");
+
+    } finally {
+      signOutButton.disabled = false;
+      signOutButton.textContent = "Sign Out";
+    }
+  });
+
+  initializeAuth();
+
+})();
+</script>
+
+<!-- CUSTOMER DATABASE INTEGRATION -->
+<script src="/customers.js"></script>
+
+</body>
+</html>
 
 })();
 </script>
