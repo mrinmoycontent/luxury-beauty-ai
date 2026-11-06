@@ -82,7 +82,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
     <div class="text-center mb-8">
       <span class="material-symbols-outlined text-4xl gold-accent">auto_awesome</span>
       <h1 class="text-3xl font-semibold mt-3">Glow Beauty AI</h1>
-      <p class="text-sm text-gray-500 mt-2">Administrator dashboard</p>
+      <p class="text-sm text-gray-500 mt-2">Administrator &amp; staff dashboard</p>
     </div>
 
     <form id="loginForm" class="space-y-5">
@@ -162,7 +162,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 
     <div class="text-center mt-6">
       <button id="createAccountBack" type="button" class="auth-link">
-        Back to Sign In
+        Back to Dashboard
       </button>
     </div>
   </div>
@@ -246,7 +246,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
     </div>
 
     <!-- STAFF ACCOUNT MANAGEMENT -->
-    <div class="glass-card border border-white rounded-xl p-4 premium-shadow flex items-center justify-between gap-3">
+    <div id="staffManagementCard" style="display:none" class="glass-card border border-white rounded-xl p-4 premium-shadow flex items-center justify-between gap-3">
       <div>
         <h3 class="font-semibold text-sm">Staff Management</h3>
         <p class="text-xs text-gray-500 mt-1">Create accounts for authorised staff members.</p>
@@ -531,6 +531,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
   const createAccountScreen = document.getElementById("createAccountScreen");
   const createAccountButton = document.getElementById("createAccountButton");
   const createAccountBack = document.getElementById("createAccountBack");
+  const staffManagementCard = document.getElementById("staffManagementCard");
 
   const createStaffForm = document.getElementById("createStaffForm");
   const staffName = document.getElementById("staffName");
@@ -568,6 +569,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 
   let recoveryMode = false;
   let recoveryHandled = false;
+  let currentUser = null;
 
   function hideAllScreens() {
     authScreen.style.display = "none";
@@ -598,7 +600,10 @@ button:disabled { cursor: not-allowed; opacity: .5; }
     resetStatus.textContent = message;
   }
 
-  function showDashboard() {
+  function showDashboard(user = currentUser) {
+    if (user) currentUser = user;
+    staffManagementCard.style.display =
+      currentUser?.id === ADMIN_USER_ID ? "flex" : "none";
     hideAllScreens();
     dashboardHeader.style.display = "flex";
     dashboardMain.style.display = "block";
@@ -795,7 +800,8 @@ button:disabled { cursor: not-allowed; opacity: .5; }
       if (!data.session) throw new Error("Login session could not be created.");
 
       loginPassword.value = "";
-      showDashboard();
+      currentUser = data.session.user;
+      showDashboard(currentUser);
 
     } catch (error) {
       console.error("Sign-in failed:", error);
@@ -877,8 +883,10 @@ button:disabled { cursor: not-allowed; opacity: .5; }
       if (recoveryMode || recoveryHandled) return;
 
       if (data.session) {
-        showDashboard();
+        currentUser = data.session.user;
+        showDashboard(currentUser);
       } else {
+        currentUser = null;
         showLogin();
       }
 
@@ -903,8 +911,10 @@ button:disabled { cursor: not-allowed; opacity: .5; }
     if (recoveryMode) return;
 
     if (session) {
-      showDashboard();
+      currentUser = session.user;
+      showDashboard(currentUser);
     } else {
+      currentUser = null;
       showLogin();
     }
   });
@@ -921,6 +931,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 
       recoveryMode = false;
       recoveryHandled = false;
+      currentUser = null;
 
       showLogin("You have signed out.");
 
