@@ -1,41 +1,38 @@
-
 (() => {
   "use strict";
 
   const client = window.glowSupabaseClient;
+  const ADMIN_USER_ID = "f28c8ccc-6aeb-46db-b388-a1238030544d";
 
   const countElement = document.getElementById("customerCount");
   const listElement = document.getElementById("customerList");
   const statusElement = document.getElementById("customerStatus");
   const refreshButton = document.getElementById("refreshCustomers");
 
-  if (!client || !countElement || !listElement || !statusElement) {
+  if (!client || !countElement || !listElement || !statusElement || !refreshButton) {
     console.error("Customer dashboard elements or Supabase client are missing.");
     return;
   }
 
   let loading = false;
+  let activeUserId = null;
+  let activeRole = null;
 
-  function clearCustomerData(message = "Sign in to view customer records.") {
-    countElement.textContent = "—";
+  function setMessage(message, isError = false) {
     listElement.replaceChildren();
-
-    const messageElement = document.createElement("p");
-    messageElement.className = "text-sm text-gray-500 py-4";
-    messageElement.textContent = message;
-
-    listElement.appendChild(messageElement);
-    statusElement.textContent = "";
+    const p = document.createElement("p");
+    p.className = isError
+      ? "text-sm text-red-600 py-4"
+      : "text-sm text-gray-500 py-4";
+    p.textContent = message;
+    listElement.appendChild(p);
   }
 
   function formatDate(value) {
     if (!value) return "Date unavailable";
 
     const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return "Date unavailable";
-    }
+    if (Number.isNaN(date.getTime())) return "Date unavailable";
 
     return new Intl.DateTimeFormat("en-IN", {
       day: "2-digit",
@@ -44,14 +41,11 @@
     }).format(date);
   }
 
-  function renderCustomers(customers) {
+  function renderCustomers(customers, isAdmin) {
     listElement.replaceChildren();
 
     if (!customers.length) {
-      const empty = document.createElement("p");
-      empty.className = "text-sm text-gray-500 py-4";
-      empty.textContent = "No customer records have been added yet.";
-      listElement.appendChild(empty);
+      setMessage("No customer records have been added yet.");
       return;
     }
 
@@ -67,22 +61,28 @@
       name.className = "text-sm font-semibold text-gray-900 truncate";
       name.textContent = customer.full_name || "Unnamed customer";
 
-      const email = document.createElement("p");
-      email.className = "text-xs text-gray-500 mt-1 break-all";
-      email.textContent = customer.email || "No email provided";
+      details.appendChild(name);
 
-      const date = document.createElement("p");
-      date.className = "text-xs text-gray-400 mt-1";
-      date.textContent = "Registered " + formatDate(customer.created_at);
+      // Contact details are displayed only to the administrator.
+      if (isAdmin) {
+        const email = document.createElement("p");
+        email.className = "text-xs text-gray-500 mt-1 break-all";
+        email.textContent = customer.email || "No email provided";
 
-      details.append(name, email, date);
+        const date = document.createElement("p");
+        date.className = "text-xs text-gray-400 mt-1";
+        date.textContent = "Registered " + formatDate(customer.created_at);
+
+        details.append(email, date);
+      }
+
       row.appendChild(details);
       listElement.appendChild(row);
     });
   }
 
   async function loadCustomers() {
-    if (loading) return;
+    if (loading || !activeUserId) return;
 
     loading = true;
     refreshButton.disabled = true;
@@ -90,42 +90,62 @@
     statusElement.textContent = "Fetching customer records...";
 
     try {
-      const [countResult, listResult] = await Promise.all([
-        client
-          .from("customers")
-          .select("id", { count: "exact", head: true }),
+      let customers = [];
+      let total = 0;
 
-        client
-          .from("customers")
-          .select("id, full_name, email, created_at")
-          .order("created_at", { ascending: false })
-          .limit(5)
-      ]);
+      if (activeUserId === ADMIN_USER_ID) {
+        const [countResult, listResult] = await Promise.all([
+          client
+            .from("customers")
+            .select("id", { count: "exact", head: true }),
 
-      if (countResult.error) throw countResult.error;
-      if (listResult.error) throw listResult.error;
+          client
+            .from("customers")
+            .select("id, full_name, email, created_at")
+            .order("created_at", { ascending: false })
+            .limit(5)
+        ]);
 
-      countElement.textContent = String(countResult.count ?? 0);
+        if (countResult.error) throw countResult.error;
+        if (listResult.error) throw listResult.error;
 
-      renderCustomers(listResult.data || []);
+        total = countResult.count ?? 0;
+        customers = listResult.data || [];
 
-      statusElement.textContent =
-        "Showing the latest " +
-        Math.min((listResult.data || []).length, 5) +
-        " customer records.";
+        renderCustomers(customers, true);
+
+        statusElement.textContent =
+          `Showing the latest ${customers.length} customer records.`;
+
+      } else if (activeRole === "staff") {
+        const { data, error } = await client.rpc("staff_list_customers");
+
+        if (error) throw error;
+
+        customers = data || [];
+        total = customers.length;
+
+        renderCustomers(customers, false);
+
+        statusElement.textContent =
+          `Showing ${customers.length} customer name(s). Contact details are restricted.`;
+
+      } else {
+        throw new Error("This account is not authorised to view customer records.");
+      }
+
+      countElement.textContent = String(total);
 
     } catch (error) {
       console.error("Customer data loading failed:", error);
 
       countElement.textContent = "Unavailable";
-      listElement.replaceChildren();
 
-      const errorMessage = document.createElement("p");
-      errorMessage.className = "text-sm text-red-600 py-4";
-      errorMessage.textContent =
-        "Customer data could not be loaded. Check the admin SELECT permission for the customers table.";
+      setMessage(
+        "Customer data could not be loaded. Check the Supabase permissions and staff access function.",
+        true
+      );
 
-      listElement.appendChild(errorMessage);
       statusElement.textContent = "Database query failed.";
 
     } finally {
@@ -134,24 +154,45 @@
     }
   }
 
-  refreshButton.addEventListener("click", loadCustomers);
+  function applySession(session) {
+    const user = session?.user;
 
-  client.auth.onAuthStateChange((event, session) => {
-    if (event === "INITIAL_SESSION") {
-      if (session) {
-        loadCustomers();
-      } else {
-        clearCustomerData();
-      }
+    if (!user) {
+      activeUserId = null;
+      activeRole = null;
+
+      countElement.textContent = "—";
+      setMessage("Sign in to view customer records.");
+      statusElement.textContent = "";
+
       return;
     }
 
-    if (event === "SIGNED_IN" && session) {
-      loadCustomers();
+    activeUserId = user.id;
+    activeRole = user.app_metadata?.role || null;
+
+    loadCustomers();
+  }
+
+  refreshButton.addEventListener("click", loadCustomers);
+
+  client.auth.onAuthStateChange((event, session) => {
+    if (
+      ["INITIAL_SESSION", "SIGNED_IN", "TOKEN_REFRESHED", "SIGNED_OUT"].includes(event)
+    ) {
+      applySession(session);
+    }
+  });
+
+  // Handles the case where INITIAL_SESSION fired before this file loaded.
+  client.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      console.error("Could not read customer dashboard session:", error);
+      return;
     }
 
-    if (event === "SIGNED_OUT") {
-      clearCustomerData();
+    if (!activeUserId && data.session) {
+      applySession(data.session);
     }
   });
 
