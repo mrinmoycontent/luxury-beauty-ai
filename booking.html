@@ -4,142 +4,579 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Book an Appointment | Glow Beauty AI</title>
+  <meta name="description" content="Explore skincare guidance with Glow Beauty AI and request your preferred appointment time.">
+
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+
   <style>
-    body { font-family: Inter, sans-serif; background:#f8f7f4; color:#24211d; }
-    h1,h2,h3 { font-family:"Playfair Display",serif; }
-    .gold { color:#b18a36; }
-    .card { background:white; border:1px solid #eee8dc; border-radius:18px; box-shadow:0 12px 35px #00000008; }
-    .field { width:100%; border:1px solid #dedbd4; border-radius:10px; padding:13px; background:white; font-size:14px; }
-    .field:focus { outline:none; border-color:#b18a36; box-shadow:0 0 0 2px #b18a3620; }
-    .slot { border:1px solid #dedbd4; border-radius:10px; padding:12px 8px; font-size:13px; background:white; }
-    .slot.available { border-color:#b18a36; cursor:pointer; }
-    .slot.available:hover,.slot.selected { background:#211d18; color:white; border-color:#211d18; }
-    .slot.unavailable { background:#f1f0ed; color:#aaa; cursor:not-allowed; text-decoration:line-through; }
-    .chat-scroll { height:300px; overflow-y:auto; }
-    .bubble { max-width:88%; padding:11px 13px; border-radius:14px; font-size:13px; line-height:1.6; white-space:pre-wrap; }
-    .user-bubble { background:#211d18; color:white; margin-left:auto; }
-    .ai-bubble { background:#f3f0e9; color:#29251f; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Inter, sans-serif;
+      background: #f8f7f4;
+      color: #24211d;
+    }
+
+    h1, h2, h3 {
+      font-family: "Playfair Display", serif;
+    }
+
+    .gold {
+      color: #b18a36;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #eee8dc;
+      border-radius: 22px;
+      box-shadow: 0 12px 35px rgba(0,0,0,.035);
+    }
+
+    /* Consistent rounded form fields */
+    .field,
+    input.field,
+    textarea.field,
+    select.field {
+      display: block;
+      width: 100%;
+      border: 1px solid #dedbd4 !important;
+      border-radius: 11px !important;
+      padding: 14px 16px;
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      background: #ffffff !important;
+      color: #24211d;
+      box-shadow: none !important;
+      min-height: 52px;
+    }
+
+    textarea.field {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .field:focus,
+    input.field:focus,
+    textarea.field:focus,
+    select.field:focus {
+      outline: none;
+      border-color: #b18a36 !important;
+      box-shadow: 0 0 0 3px rgba(177,138,54,.12) !important;
+    }
+
+    .field::placeholder {
+      color: #858b98;
+      opacity: 1;
+    }
+
+    /* Appointment slots */
+    .slot {
+      border: 1px solid #dedbd4;
+      border-radius: 11px;
+      padding: 13px 7px;
+      font-size: 12px;
+      font-weight: 500;
+      background: #ffffff;
+      transition: all .2s ease;
+    }
+
+    .slot.available {
+      border-color: #d8c18d;
+      cursor: pointer;
+      color: #4d4128;
+    }
+
+    .slot.available:hover {
+      background: #f6f0e3;
+      border-color: #b18a36;
+    }
+
+    .slot.selected {
+      background: #211d18;
+      color: #ffffff;
+      border-color: #211d18;
+    }
+
+    .slot.unavailable {
+      background: #f1f0ed;
+      color: #aaa;
+      cursor: not-allowed;
+      text-decoration: line-through;
+      border-color: #eee;
+    }
+
+    /* AI Concierge */
+    .chat-scroll {
+      height: 330px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      scroll-behavior: smooth;
+    }
+
+    .bubble {
+      max-width: 90%;
+      padding: 13px 16px;
+      border-radius: 15px;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .user-bubble {
+      background: #211d18;
+      color: #ffffff;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+
+    .ai-bubble {
+      background: #f3f0e9;
+      color: #29251f;
+      margin-right: auto;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-suggestion {
+      border: 1px solid #e6e4df;
+      background: #fff;
+      transition: .2s;
+    }
+
+    .chat-suggestion:hover {
+      background: #f6f0e3;
+      border-color: #d8c18d;
+    }
+
+    .primary-button {
+      background: #171513;
+      color: white;
+      border-radius: 11px;
+      padding: 15px 20px;
+      font-weight: 600;
+      font-size: 13px;
+      transition: .2s;
+    }
+
+    .primary-button:hover {
+      background: #39332b;
+    }
+
+    .primary-button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    @media(max-width: 640px) {
+      .chat-scroll {
+        height: 300px;
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen px-4 py-10">
 
-<main class="max-w-5xl mx-auto">
+<body class="min-h-screen px-4 py-8 sm:py-10">
+
+<main class="max-w-6xl mx-auto">
+
+  <!-- Header -->
   <header class="text-center mb-9">
-    <p class="text-xs uppercase tracking-[.3em] text-gray-500">Glow Beauty AI</p>
-    <h1 class="text-4xl sm:text-5xl mt-3">Your Beauty Journey Begins Here</h1>
-    <p class="text-sm text-gray-500 mt-3">Explore skincare guidance and request an appointment.</p>
+
+    <div class="inline-flex items-center gap-2 mb-3">
+      <span class="text-[#b18a36] text-xl">✦</span>
+      <p class="text-xs uppercase tracking-[.35em] text-gray-500">
+        Glow Beauty AI
+      </p>
+      <span class="text-[#b18a36] text-xl">✦</span>
+    </div>
+
+    <h1 class="text-4xl sm:text-5xl leading-tight">
+      Your Beauty Journey Begins Here
+    </h1>
+
+    <p class="text-sm text-gray-500 mt-3">
+      Discover skincare guidance and request your preferred appointment.
+    </p>
+
   </header>
 
+  <!-- Main layout -->
   <div class="grid lg:grid-cols-5 gap-6 items-start">
 
+    <!-- Appointment form -->
     <section class="lg:col-span-3 card p-6 sm:p-8">
-      <h2 class="text-2xl mb-1">Appointment Request</h2>
-      <p class="text-sm text-gray-500 mb-6">Choose a date and an available time slot.</p>
+
+      <div class="mb-7">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="text-2xl gold">✧</span>
+          <h2 class="text-2xl sm:text-3xl">
+            Appointment Request
+          </h2>
+        </div>
+
+        <p class="text-sm text-gray-500">
+          Choose a date and an available time slot.
+        </p>
+      </div>
 
       <form id="bookingForm" class="space-y-5">
+
+        <!-- Full name -->
         <div>
-          <label for="fullName" class="block text-sm font-medium mb-2">Full name</label>
-          <input id="fullName" name="full_name" class="field" maxlength="100" autocomplete="name" required>
+          <label for="fullName" class="block text-sm font-semibold mb-2">
+            Full name
+          </label>
+
+          <input
+            id="fullName"
+            name="full_name"
+            class="field"
+            type="text"
+            maxlength="100"
+            autocomplete="name"
+            placeholder="Enter your full name"
+            required
+          >
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
+        <!-- Email and phone -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
           <div>
-            <label for="email" class="block text-sm font-medium mb-2">Email address</label>
-            <input id="email" name="email" type="email" class="field" maxlength="254" autocomplete="email" required>
+            <label for="email" class="block text-sm font-semibold mb-2">
+              Email address
+            </label>
+
+            <input
+              id="email"
+              name="email"
+              class="field"
+              type="email"
+              maxlength="254"
+              autocomplete="email"
+              placeholder="Enter your email"
+              required
+            >
           </div>
+
           <div>
-            <label for="phone" class="block text-sm font-medium mb-2">Phone number</label>
-            <input id="phone" name="phone" type="tel" class="field" maxlength="20" placeholder="Mobile number" required>
-          </div>
-        </div>
+            <label for="phone" class="block text-sm font-semibold mb-2">
+              Phone number
+            </label>
 
-        <div>
-          <label for="service" class="block text-sm font-medium mb-2">Service or treatment of interest</label>
-          <input id="service" name="service_name" class="field" maxlength="150" placeholder="What would you like to enquire about?" required>
-          <p class="text-xs text-gray-500 mt-2">The clinic will confirm service availability with you.</p>
-        </div>
-
-        <div>
-          <label for="appointmentDate" class="block text-sm font-medium mb-2">Choose your preferred date</label>
-          <input id="appointmentDate" name="appointment_date" type="date" class="field" required>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between gap-2 mb-3">
-            <label class="text-sm font-medium">Available time slots</label>
-            <span class="text-xs text-gray-500">9:00 AM – 6:00 PM</span>
+            <input
+              id="phone"
+              name="phone"
+              class="field"
+              type="tel"
+              maxlength="20"
+              autocomplete="tel"
+              placeholder="Mobile number"
+              required
+            >
           </div>
 
-          <div class="flex flex-wrap gap-3 text-xs mb-4">
-            <span>🟡 Available</span>
-            <span>⚫ Selected</span>
-            <span>🔒 Unavailable</span>
-          </div>
-
-          <div id="slotGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-            <p class="text-sm text-gray-500 col-span-full">Choose a date to view slots.</p>
-          </div>
-          <input type="hidden" id="appointmentTime" name="appointment_time" required>
-          <p id="slotStatus" class="text-xs text-gray-500 mt-3" aria-live="polite"></p>
         </div>
 
+        <!-- Service -->
         <div>
-          <label for="notes" class="block text-sm font-medium mb-2">Additional notes (optional)</label>
-          <textarea id="notes" name="notes" class="field" rows="3" maxlength="1000" placeholder="Anything you would like us to know?"></textarea>
+          <label for="service" class="block text-sm font-semibold mb-2">
+            Service or treatment of interest
+          </label>
+
+          <input
+            id="service"
+            name="service_name"
+            class="field"
+            type="text"
+            maxlength="150"
+            placeholder="What would you like to enquire about?"
+            required
+          >
+
+          <p class="text-xs text-gray-500 mt-2">
+            The clinic will confirm service availability with you.
+          </p>
         </div>
 
+        <!-- Appointment date -->
+        <div>
+          <label for="appointmentDate" class="block text-sm font-semibold mb-2">
+            Choose your preferred date
+          </label>
+
+          <input
+            id="appointmentDate"
+            name="appointment_date"
+            class="field"
+            type="date"
+            required
+          >
+        </div>
+
+        <!-- Available slots -->
+        <div>
+
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+
+            <label class="text-sm font-semibold">
+              Available time slots
+            </label>
+
+            <span class="text-xs text-gray-500">
+              9:00 AM – 6:00 PM
+            </span>
+
+          </div>
+
+          <div class="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-600 mb-4">
+
+            <span>
+              <span class="inline-block w-3 h-3 rounded-full bg-[#d8b75c] mr-1"></span>
+              Available
+            </span>
+
+            <span>
+              <span class="inline-block w-3 h-3 rounded-full bg-black mr-1"></span>
+              Selected
+            </span>
+
+            <span>
+              <span class="inline-block w-3 h-3 rounded-full bg-gray-300 mr-1"></span>
+              Unavailable
+            </span>
+
+          </div>
+
+          <div
+            id="slotGrid"
+            class="grid grid-cols-3 sm:grid-cols-4 gap-2"
+          >
+            <p class="text-sm text-gray-500 col-span-full">
+              Choose a date to view slots.
+            </p>
+          </div>
+
+          <input
+            type="hidden"
+            id="appointmentTime"
+            name="appointment_time"
+            required
+          >
+
+          <p
+            id="slotStatus"
+            class="text-xs text-gray-500 mt-3"
+            aria-live="polite"
+          ></p>
+
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label for="notes" class="block text-sm font-semibold mb-2">
+            Additional notes (optional)
+          </label>
+
+          <textarea
+            id="notes"
+            name="notes"
+            class="field"
+            rows="4"
+            maxlength="1000"
+            placeholder="Anything you would like us to know?"
+          ></textarea>
+        </div>
+
+        <!-- Honeypot -->
         <div class="hidden" aria-hidden="true">
           <label for="website">Website</label>
-          <input id="website" name="website" tabindex="-1" autocomplete="off">
+          <input
+            id="website"
+            name="website"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+          >
         </div>
 
-        <button id="submitBooking" type="submit" class="w-full bg-black text-white rounded-lg py-4 font-semibold text-sm disabled:opacity-50">
+        <!-- Submit -->
+        <button
+          id="submitBooking"
+          type="submit"
+          class="primary-button w-full"
+        >
           Submit Appointment Request
         </button>
-        <p id="bookingStatus" class="text-sm text-center" role="status" aria-live="polite"></p>
+
+        <p
+          id="bookingStatus"
+          class="text-sm text-center"
+          role="status"
+          aria-live="polite"
+        ></p>
+
       </form>
 
-      <p class="text-xs text-gray-500 mt-5 text-center">
-        Your request remains pending until the clinic confirms it.
-      </p>
+      <div class="border-t border-gray-100 mt-6 pt-5">
+        <p class="text-xs text-center text-gray-500 leading-relaxed">
+          Your appointment request is not confirmed until the clinic reviews and approves it.
+        </p>
+      </div>
+
     </section>
 
-    <aside class="lg:col-span-2 card p-5 sm:p-6">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-11 h-11 rounded-full bg-[#f3ead7] flex items-center justify-center text-xl">✦</div>
-        <div>
-          <h2 class="text-2xl">AI Concierge</h2>
-          <p class="text-xs text-gray-500">Your skincare guide</p>
+    <!-- AI Concierge -->
+    <aside class="lg:col-span-2 card p-6 sm:p-7">
+
+      <!-- AI heading -->
+      <div class="flex items-center gap-4 mb-6">
+
+        <div class="w-14 h-14 rounded-full bg-[#f3ead7] flex items-center justify-center shrink-0">
+          <span class="text-2xl">✦</span>
         </div>
+
+        <div>
+          <h2 class="text-2xl sm:text-3xl">
+            AI Concierge
+          </h2>
+
+          <p class="text-sm text-gray-500">
+            Your skincare guide
+          </p>
+        </div>
+
       </div>
 
-      <div id="chatMessages" class="chat-scroll flex flex-col gap-3 border-y border-gray-100 py-4" aria-live="polite">
-        <div class="bubble ai-bubble">Hello! I'm your Glow Beauty AI Concierge. I can help you understand skincare ingredients, build a routine and explore general beauty treatments. What would you like help with?</div>
+      <!-- Conversation -->
+      <div
+        id="chatMessages"
+        class="chat-scroll border-y border-gray-100 py-5"
+        aria-live="polite"
+      >
+
+        <div class="bubble ai-bubble">
+          Hello! I'm your Glow Beauty AI Concierge.
+
+          I can help you understand skincare ingredients, build a routine, explore general beauty treatments and learn how to care for your skin.
+
+          What would you like help with?
+        </div>
+
       </div>
 
-      <div class="flex gap-2 mt-4">
-        <input id="chatInput" class="field min-w-0" maxlength="1000" placeholder="Ask me about skincare...">
-        <button id="sendChat" class="bg-black text-white rounded-lg px-4 text-sm font-semibold">Send</button>
-      </div>
-      <p id="chatStatus" class="text-xs text-gray-500 mt-2" aria-live="polite"></p>
+      <!-- Chat input -->
+      <div class="flex gap-2 mt-5">
 
-      <div class="mt-5 flex flex-wrap gap-2">
-        <button class="chat-suggestion text-xs border rounded-full px-3 py-2" data-question="Build a simple skincare routine for me.">Build a routine</button>
-        <button class="chat-suggestion text-xs border rounded-full px-3 py-2" data-question="Explain the difference between retinol and vitamin C.">Ingredients</button>
-        <button class="chat-suggestion text-xs border rounded-full px-3 py-2" data-question="How do I care for sensitive skin?">Sensitive skin</button>
+        <input
+          id="chatInput"
+          class="field min-w-0"
+          type="text"
+          maxlength="1000"
+          placeholder="Ask me about skincare..."
+        >
+
+        <button
+          id="sendChat"
+          type="button"
+          class="primary-button shrink-0"
+        >
+          Send
+        </button>
+
       </div>
-      <p class="text-xs text-gray-400 mt-5">AI guidance is educational, not a medical diagnosis or substitute for professional care.</p>
+
+      <p
+        id="chatStatus"
+        class="text-xs text-gray-500 mt-2"
+        aria-live="polite"
+      ></p>
+
+      <!-- Suggested prompts -->
+      <div class="mt-5">
+
+        <p class="text-xs text-gray-500 mb-3">
+          Explore something:
+        </p>
+
+        <div class="flex flex-wrap gap-2">
+
+          <button
+            type="button"
+            class="chat-suggestion rounded-full px-3 py-2 text-xs"
+            data-question="Build a simple skincare routine for me. Ask me about my skin type first."
+          >
+            Build a routine
+          </button>
+
+          <button
+            type="button"
+            class="chat-suggestion rounded-full px-3 py-2 text-xs"
+            data-question="Explain the difference between retinol, niacinamide and vitamin C."
+          >
+            Ingredients
+          </button>
+
+          <button
+            type="button"
+            class="chat-suggestion rounded-full px-3 py-2 text-xs"
+            data-question="How should I take care of sensitive skin?"
+          >
+            Sensitive skin
+          </button>
+
+          <button
+            type="button"
+            class="chat-suggestion rounded-full px-3 py-2 text-xs"
+            data-question="Explain the difference between a chemical peel and a regular facial."
+          >
+            Treatment guide
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="border-t border-gray-100 mt-6 pt-5">
+
+        <p class="text-xs text-gray-400 leading-relaxed">
+          AI guidance is educational and does not replace a medical diagnosis or professional dermatological advice.
+        </p>
+
+      </div>
+
     </aside>
+
   </div>
 
-  <footer class="text-center mt-8 text-xs text-gray-500">
-    Glow Beauty AI · <a href="/" class="underline">Administrator login</a>
+  <!-- Footer -->
+  <footer class="text-center mt-9">
+
+    <p class="text-xs text-gray-500">
+      Glow Beauty AI · Beauty guidance, made more personal.
+    </p>
+
+    <a
+      href="/"
+      class="inline-block text-xs underline text-gray-500 mt-3"
+    >
+      Administrator login
+    </a>
+
   </footer>
+
 </main>
 
 <script src="/booking.js"></script>
+
 </body>
 </html>
