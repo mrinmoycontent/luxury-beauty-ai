@@ -371,3 +371,689 @@ button:disabled { cursor: not-allowed; opacity: .5; }
   <button data-view="schedule" class="nav-link text-gray-400 flex flex-col items-center justify-center gap-1 w-1/4"><span class="material-symbols-outlined text-2xl">calendar_month</span><span class="text-[11px]">Schedule</span></button>
   <button id="analyticsNavButton" data-view="analytics" class="nav-link text-gray-400 flex flex-col items-center justify-center gap-1 w-1/4"><span class="material-symbols-outlined text-2xl">analytics</span><span class="text-[11px]">Analytics</span></button>
 </nav>
+    <!-- STAFF ACCOUNT MANAGEMENT -->
+    <div id="staffManagementCard" style="display:none" class="glass-card border border-white rounded-xl p-4 premium-shadow flex items-center justify-between gap-3">
+      <div>
+        <h3 class="font-semibold text-sm">Staff Management</h3>
+        <p class="text-xs text-gray-500 mt-1">Create accounts for authorised staff members.</p>
+      </div>
+      <button
+        id="createAccountButton"
+        type="button"
+        class="bg-black text-white rounded-lg px-4 py-3 text-xs font-semibold whitespace-nowrap">
+        <span class="material-symbols-outlined text-sm align-middle mr-1">person_add</span>
+        Create Staff
+      </button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
+        <span class="material-symbols-outlined gold-accent text-2xl">calendar_month</span>
+        <div><p class="text-xs text-gray-500">Total Bookings</p><p class="text-lg font-semibold mt-1">Not connected</p></div>
+      </div>
+      <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
+        <span class="material-symbols-outlined gold-accent text-2xl">group</span>
+        <div><p class="text-xs text-gray-500">Customers</p><p id="customerCount" class="text-lg font-semibold mt-1">Loading...</p></div>
+      </div>
+      <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
+        <span class="material-symbols-outlined gold-accent text-2xl">auto_awesome</span>
+        <div><p class="text-xs text-gray-500">AI Conversations</p><p class="text-lg font-semibold mt-1">Session only</p></div>
+      </div>
+      <div class="glass-card p-5 rounded-xl border border-white premium-shadow min-h-36 flex flex-col justify-between">
+        <span class="material-symbols-outlined gold-accent text-2xl">payments</span>
+        <div><p class="text-xs text-gray-500">Revenue</p><p class="text-lg font-semibold mt-1">Not connected</p></div>
+      </div>
+    </div>
+
+    <div class="glass-card border border-white rounded-xl p-6 premium-shadow">
+      <div class="flex items-center justify-between gap-3">
+        <div><h3 class="text-xl">Customers</h3><p class="text-xs text-gray-500 mt-1">Latest customer records from Supabase</p></div>
+        <button id="refreshCustomers" type="button" class="bg-black text-white rounded-lg px-4 py-2 text-xs font-semibold">Refresh</button>
+      </div>
+      <div id="customerList" class="mt-5 space-y-3">
+        <p class="text-sm text-gray-500">Loading customer records...</p>
+      </div>
+      <p id="customerStatus" class="text-xs text-gray-500 mt-3" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="glass-card border border-white rounded-xl p-6 premium-shadow">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl">AI Concierge</h3>
+        <span class="text-xs bg-black text-white px-3 py-1 rounded-full">CONNECTED</span>
+      </div>
+      <p class="text-sm text-gray-500 mt-3 leading-relaxed">Your AI receptionist is connected. Start a conversation to test the assistant.</p>
+      <button onclick="showView('concierge')" class="mt-5 bg-black text-white rounded-lg px-5 py-3 text-sm font-semibold">
+        Open AI Concierge
+        <span class="material-symbols-outlined text-sm align-middle ml-1">arrow_forward</span>
+      </button>
+    </div>
+
+    <div id="adminGrowthCard" class="glass-card border border-white rounded-xl p-6 premium-shadow">
+      <h3 class="text-xl">Growth Performance</h3>
+      <div class="py-10 text-center">
+        <span class="material-symbols-outlined text-4xl text-gray-300">monitoring</span>
+        <p class="text-sm font-medium mt-3">Analytics not available yet</p>
+        <p class="text-xs text-gray-500 mt-2">Connect booking and revenue data to display business analytics.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONCIERGE -->
+  <section id="conciergeView" class="page-view space-y-5">
+    <div class="mt-4">
+      <p class="text-xs uppercase tracking-[.2em] text-gray-500">Your virtual assistant</p>
+      <h2 class="text-3xl mt-2">AI Concierge</h2>
+      <p class="text-sm text-gray-500 mt-2">Chat with your AI receptionist.</p>
+    </div>
+    <div class="glass-card border border-white rounded-xl p-5 premium-shadow">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined gold-accent">auto_awesome</span>
+          <span class="font-semibold text-sm">AI Receptionist</span>
+        </div>
+        <span class="text-xs text-green-700 flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span>Connected</span>
+      </div>
+      <p class="text-xs text-gray-500 mb-4">Clinic services, prices, opening hours and appointment availability have not yet been configured. The assistant cannot confirm appointments.</p>
+      <div id="chatMessages" class="chat-scroll space-y-4 max-h-[430px] min-h-[220px] overflow-y-auto p-1" aria-live="polite">
+        <div class="flex justify-start">
+          <div class="max-w-[90%] bg-white border-l-4 gold-border p-4 rounded-xl shadow-sm">
+            <p class="text-[10px] uppercase font-bold text-gray-400 mb-2">AI Receptionist</p>
+            <p class="text-sm leading-relaxed">Hello! Welcome to Glow Beauty AI. How can I help you today?</p>
+          </div>
+        </div>
+      </div>
+      <form id="chatForm" class="mt-5 pt-4 border-t border-gray-200 flex items-end gap-2">
+        <textarea id="chatInput" rows="2" maxlength="4000" required placeholder="Type your message..." class="flex-1 min-w-0 resize-none rounded-xl border border-gray-200 bg-white p-3 text-sm focus:border-black focus:ring-1 focus:ring-black"></textarea>
+        <button id="chatSend" type="submit" class="bg-black text-white rounded-xl px-5 py-3 text-sm font-semibold">Send</button>
+      </form>
+      <div class="flex items-center justify-between mt-3">
+        <p id="chatStatus" class="text-xs text-gray-500" role="status">AI service ready.</p>
+        <button id="clearChat" type="button" class="text-xs text-red-600 font-medium hover:underline">Clear Chat</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section id="scheduleView" class="page-view space-y-5">
+    <div class="mt-4">
+      <p class="text-xs uppercase tracking-[.2em] text-gray-500">Appointments</p>
+      <h2 class="text-3xl mt-2">Schedule</h2>
+      <p class="text-sm text-gray-500 mt-2">Manage customer appointment requests.</p>
+    </div>
+    <div class="glass-card border border-white rounded-xl p-5 premium-shadow">
+      <div class="flex items-center justify-between gap-3">
+        <div><h3 class="text-xl">Appointment Requests</h3><p class="text-xs text-gray-500 mt-1">Live records from Supabase</p></div>
+        <button id="refreshAppointments" type="button" class="bg-black text-white rounded-lg px-4 py-2 text-xs font-semibold">Refresh</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mt-5">
+        <div class="bg-white rounded-lg p-4 border border-gray-100"><p class="text-xs text-gray-500">Total Requests</p><p id="appointmentTotal" class="text-2xl font-semibold mt-1">—</p></div>
+        <div class="bg-white rounded-lg p-4 border border-gray-100"><p class="text-xs text-gray-500">Pending</p><p id="appointmentPending" class="text-2xl font-semibold mt-1">—</p></div>
+      </div>
+      <p id="appointmentStatus" class="text-xs text-gray-500 mt-4" role="status" aria-live="polite">Loading appointments...</p>
+      <div id="appointmentList" class="mt-4 space-y-4"><p class="text-sm text-gray-500">Loading appointment records...</p></div>
+    </div>
+  </section>
+
+  <!-- ANALYTICS -->
+  <section id="analyticsView" class="page-view space-y-5">
+    <div class="mt-4">
+      <p class="text-xs uppercase tracking-[.2em] text-gray-500">Business insights</p>
+      <h2 class="text-3xl mt-2">Analytics</h2>
+      <p class="text-sm text-gray-500 mt-2">Track your beauty business performance.</p>
+    </div>
+    <div class="glass-card border border-white rounded-xl p-8 text-center premium-shadow">
+      <span class="material-symbols-outlined text-5xl text-gray-300">analytics</span>
+      <h3 class="text-xl mt-4">Analytics coming soon</h3>
+      <p class="text-sm text-gray-500 mt-3 leading-relaxed">Real booking trends, customer activity, AI conversations and revenue reports will be displayed after database integration.</p>
+      <span class="inline-block mt-5 text-xs bg-gray-100 text-gray-600 rounded-full px-4 py-2">Waiting for real business data</span>
+    </div>
+  </section>
+</main>
+
+<!-- BOTTOM NAVIGATION -->
+<nav id="dashboardNav" style="display:none" class="fixed bottom-0 w-full z-50 bg-white/95 backdrop-blur-xl border-t border-gray-200/70 h-20 px-3 flex justify-around items-center">
+  <button data-view="home" class="nav-link active flex flex-col items-center justify-center gap-1 w-1/4"><span class="material-symbols-outlined text-2xl">dashboard</span><span class="text-[11px]">Home</span></button>
+  <button data-view="concierge" class="nav-link text-gray-400 flex flex-col items-center justify-center gap-1 w-1/4"><span class="material-symbols-outlined text-2xl">auto_awesome</span><span class="text-[11px]">Concierge</span></button>
+  <button data-view="schedule" class="nav-link text-gray-400 flex flex-col items-center justify-center gap-1 w-1/4"><span class="material-symbols-outlined text-2xl">calendar_month</span><span class="text-[11px]">Schedule</span></button>
+  <button data-view="analytics" class="nav-link text-gray-400 flex flex-col items-center justify-center gap-1 w-1/4"><span class="material-symbols-outlined text-2xl">analytics</span><span class="text-[11px]">Analytics</span></button>
+</nav>
+
+<!-- APPLICATION JAVASCRIPT -->
+<script>
+(() => {
+  "use strict";
+
+  const views = {
+    home: document.getElementById("homeView"),
+    concierge: document.getElementById("conciergeView"),
+    schedule: document.getElementById("scheduleView"),
+    analytics: document.getElementById("analyticsView")
+  };
+
+  const navButtons = document.querySelectorAll(".nav-link");
+
+  window.showView = function(viewName) {
+    if (!views[viewName]) return;
+    if (viewName === "analytics" && window.glowIsAdmin !== true) {
+      viewName = "home";
+    }
+    Object.entries(views).forEach(([name, element]) => element.classList.toggle("active", name === viewName));
+    navButtons.forEach(button => {
+      const selected = button.dataset.view === viewName;
+      button.classList.toggle("active", selected);
+      button.classList.toggle("text-gray-400", !selected);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  navButtons.forEach(button => button.addEventListener("click", () => showView(button.dataset.view)));
+
+  function updateGreeting() {
+    const hour = new Date().getHours();
+    let greeting = "Good Evening";
+    if (hour < 12) greeting = "Good Morning";
+    else if (hour < 17) greeting = "Good Afternoon";
+    document.getElementById("greeting").textContent = greeting + ", Welcome Back";
+  }
+  updateGreeting();
+
+  const form = document.getElementById("chatForm");
+  const input = document.getElementById("chatInput");
+  const send = document.getElementById("chatSend");
+  const messagesEl = document.getElementById("chatMessages");
+  const statusEl = document.getElementById("chatStatus");
+  const clearButton = document.getElementById("clearChat");
+
+  const initialMessage = {
+    role: "assistant",
+    content: "Hello! Welcome to Glow Beauty AI. How can I help you today?"
+  };
+
+  let history = [];
+
+  function renderMessage(role, content) {
+    const outer = document.createElement("div");
+    outer.className = role === "user" ? "flex justify-end" : "flex justify-start";
+    const bubble = document.createElement("div");
+    bubble.className = role === "user"
+      ? "max-w-[90%] bg-zinc-900 text-white p-4 rounded-xl shadow-sm"
+      : "max-w-[90%] bg-white border-l-4 gold-border p-4 rounded-xl shadow-sm";
+    const label = document.createElement("p");
+    label.className = "text-[10px] uppercase font-bold mb-2 " + (role === "user" ? "text-white/60" : "text-gray-400");
+    label.textContent = role === "user" ? "YOU" : "AI RECEPTIONIST";
+    const message = document.createElement("p");
+    message.className = "text-sm leading-relaxed whitespace-pre-wrap break-words";
+    message.textContent = content;
+    bubble.append(label, message);
+    outer.appendChild(bubble);
+    messagesEl.appendChild(outer);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function resetChat() {
+    if (send.disabled) return;
+    history = [];
+    messagesEl.innerHTML = "";
+    renderMessage(initialMessage.role, initialMessage.content);
+    statusEl.textContent = "Chat cleared. AI service ready.";
+    input.value = "";
+  }
+
+  clearButton.addEventListener("click", resetChat);
+
+  input.addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const content = input.value.trim();
+    if (!content || send.disabled) return;
+
+    history.push({ role: "user", content });
+    renderMessage("user", content);
+    input.value = "";
+    send.disabled = true;
+    statusEl.textContent = "AI is replying...";
+
+    try {
+        const forgotForm = document.getElementById("forgotForm");
+  const forgotEmail = document.getElementById("forgotEmail");
+  const sendResetButton = document.getElementById("sendResetButton");
+  const forgotStatus = document.getElementById("forgotStatus");
+  const backToLogin = document.getElementById("backToLogin");
+
+  const resetForm = document.getElementById("resetForm");
+  const newPassword = document.getElementById("newPassword");
+  const confirmPassword = document.getElementById("confirmPassword");
+  const resetButton = document.getElementById("resetButton");
+  const resetStatus = document.getElementById("resetStatus");
+
+  const dashboardHeader = document.getElementById("dashboardHeader");
+  const dashboardMain = document.getElementById("dashboardMain");
+  const dashboardNav = document.getElementById("dashboardNav");
+  const signOutButton = document.getElementById("signOutButton");
+  const userDisplayName = document.getElementById("userDisplayName");
+  const userRoleBadge = document.getElementById("userRoleBadge");
+  const analyticsNavButton = document.querySelector('[data-view="analytics"]');
+  const adminGrowthCard = document.getElementById("adminGrowthCard");
+
+  let recoveryMode = false;
+  let recoveryHandled = false;
+  let currentUser = null;
+
+  function hideAllScreens() {
+    authScreen.style.display = "none";
+    createAccountScreen.style.display = "none";
+    forgotScreen.style.display = "none";
+    resetScreen.style.display = "none";
+    dashboardHeader.style.display = "none";
+    dashboardMain.style.display = "none";
+    dashboardNav.style.display = "none";
+  }
+
+  function showLogin(message = "") {
+    hideAllScreens();
+    authScreen.style.display = "flex";
+    authStatus.textContent = message;
+  }
+
+  function showForgot(message = "") {
+    hideAllScreens();
+    forgotScreen.style.display = "flex";
+    forgotStatus.textContent = message;
+    forgotEmail.focus();
+  }
+
+  function showReset(message = "") {
+    hideAllScreens();
+    resetScreen.style.display = "flex";
+    resetStatus.textContent = message;
+  }
+
+  function showDashboard(user = currentUser) {
+    if (user) currentUser = user;
+
+    const isAdmin = currentUser?.id === ADMIN_USER_ID;
+    const isStaff = currentUser?.app_metadata?.role === "staff";
+
+    const displayName =
+      currentUser?.user_metadata?.full_name ||
+      currentUser?.user_metadata?.name ||
+      currentUser?.email?.split("@")[0] ||
+      "Account";
+
+    window.glowIsAdmin = isAdmin;
+
+    userDisplayName.textContent = displayName;
+    userRoleBadge.textContent = isAdmin
+      ? "Administrator"
+      : (isStaff ? "Staff" : "Account");
+
+    staffManagementCard.style.display = isAdmin ? "flex" : "none";
+    analyticsNavButton.style.display = isAdmin ? "flex" : "none";
+    adminGrowthCard.style.display = isAdmin ? "block" : "none";
+
+    const hour = new Date().getHours();
+    const greeting = hour < 12
+      ? "Good Morning"
+      : hour < 17
+        ? "Good Afternoon"
+        : "Good Evening";
+
+    document.getElementById("greeting").textContent =
+      `${greeting}, ${displayName}`;
+
+    if (
+      !isAdmin &&
+      document.getElementById("analyticsView").classList.contains("active")
+    ) {
+      window.showView("home");
+    }
+
+    hideAllScreens();
+
+    dashboardHeader.style.display = "flex";
+    dashboardMain.style.display = "block";
+    dashboardNav.style.display = "flex";
+  }
+
+  if (!window.supabase || typeof window.supabase.createClient !== "function") {
+    showLogin("Authentication service could not load. Refresh and try again.");
+    return;
+  }
+
+  if (!SUPABASE_PUBLISHABLE_KEY) {
+    showLogin("Authentication configuration is missing.");
+    return;
+  }
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+  window.glowSupabaseClient = supabaseClient;
+
+  const ADMIN_USER_ID = "f28c8ccc-6aeb-46db-b388-a1238030544d";
+
+  createAccountButton.addEventListener("click", async () => {
+    createStaffForm.reset();
+    createStaffStatus.textContent = "";
+
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error || !data.session) {
+        showLogin("Please sign in again.");
+        return;
+      }
+
+      if (data.session.user.id !== ADMIN_USER_ID) {
+        alert("Only the system administrator can create staff accounts.");
+        return;
+      }
+
+      hideAllScreens();
+      createAccountScreen.style.display = "flex";
+
+    } catch (error) {
+      console.error("Session verification failed:", error);
+      alert("Unable to verify administrator access.");
+    }
+  });
+
+  createAccountBack.addEventListener("click", () => showDashboard());
+
+  createStaffForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const name = staffName.value.trim();
+    const email = staffEmail.value.trim();
+    const password = staffPassword.value;
+
+    if (!name || !email || password.length < 12) {
+      createStaffStatus.textContent =
+        "Please enter valid details and a password of at least 12 characters.";
+      return;
+    }
+
+    createStaffSubmit.disabled = true;
+    createStaffSubmit.textContent = "Creating Account...";
+    createStaffStatus.textContent = "Verifying administrator access...";
+
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error || !data.session) {
+        throw new Error("Your administrator session has expired. Sign in again.");
+      }
+
+      const response = await fetch("/api/create-staff", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${data.session.access_token}`
+        },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      let result;
+
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error("The server returned an invalid response.");
+      }
+
+      if (!response.ok) {
+        throw new Error(result.error || "Account creation failed.");
+      }
+
+      createStaffForm.reset();
+
+      createStaffStatus.textContent =
+        "Staff account created. The staff member can now sign in using the registered email and temporary password.";
+
+    } catch (error) {
+      console.error("Staff registration error:", error);
+
+      createStaffStatus.textContent =
+        error.message || "Unable to create the account. Please try again.";
+
+    } finally {
+      createStaffSubmit.disabled = false;
+      createStaffSubmit.textContent = "Create Staff Account";
+    }
+  });
+
+  forgotPassword.addEventListener("click", () => {
+    forgotEmail.value = loginEmail.value.trim();
+    showForgot();
+  });
+
+  backToLogin.addEventListener("click", () => {
+    forgotForm.reset();
+    forgotStatus.textContent = "";
+    showLogin();
+  });
+
+  forgotForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email = forgotEmail.value.trim();
+
+    if (!email) {
+      forgotStatus.textContent = "Please enter your email address.";
+      forgotEmail.focus();
+      return;
+    }
+
+    sendResetButton.disabled = true;
+    sendResetButton.textContent = "Sending...";
+    forgotStatus.textContent = "Please wait...";
+
+    try {
+      const { error } =
+        await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin
+        });
+
+      if (error) throw error;
+
+      forgotStatus.textContent =
+        "If an account exists with this email, a password reset link will be sent. Please check your inbox and spam folder.";
+
+    } catch (error) {
+      console.error("Password recovery request failed:", error);
+
+      forgotStatus.textContent =
+        "We couldn't process your request right now. Please try again later.";
+
+    } finally {
+      sendResetButton.disabled = false;
+      sendResetButton.textContent = "Send Reset Link";
+    }
+  });
+
+  loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value;
+
+    if (!email || !password) {
+      authStatus.textContent = "Enter your email and password.";
+      return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.textContent = "Signing in...";
+    authStatus.textContent = "Verifying your credentials...";
+
+    try {
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
+      if (error) throw error;
+      if (!data.session) {
+        throw new Error("Login session could not be created.");
+      }
+
+      loginPassword.value = "";
+      currentUser = data.session.user;
+      showDashboard(currentUser);
+
+    } catch (error) {
+      console.error("Sign-in failed:", error);
+
+      authStatus.textContent =
+        "Unable to sign in. Please check your email and password.";
+
+    } finally {
+      loginButton.disabled = false;
+      loginButton.textContent = "Sign In";
+    }
+  });
+
+  resetForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const password = newPassword.value;
+    const confirmation = confirmPassword.value;
+
+    if (password.length < 8) {
+      resetStatus.textContent =
+        "Your password must contain at least 8 characters.";
+      return;
+    }
+
+    if (password !== confirmation) {
+      resetStatus.textContent = "Your passwords do not match.";
+      return;
+    }
+
+    if (!recoveryMode) {
+      resetStatus.textContent =
+        "Your password reset session is invalid or expired. Request a new reset link.";
+      return;
+    }
+
+    resetButton.disabled = true;
+    resetButton.textContent = "Updating...";
+    resetStatus.textContent = "Updating your password...";
+
+    try {
+      const { error } = await supabaseClient.auth.updateUser({
+        password
+      });
+
+      if (error) throw error;
+
+      newPassword.value = "";
+      confirmPassword.value = "";
+
+      recoveryMode = false;
+      recoveryHandled = true;
+
+      await supabaseClient.auth.signOut();
+
+      showLogin(
+        "Your password has been updated. Please sign in with your new password."
+      );
+
+    } catch (error) {
+      console.error("Password update failed:", error);
+
+      resetStatus.textContent =
+        error.message || "Unable to update your password. Please try again.";
+
+    } finally {
+      resetButton.disabled = false;
+      resetButton.textContent = "Update Password";
+    }
+  });
+
+  async function initializeAuth() {
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+
+      if (error) throw error;
+      if (recoveryMode || recoveryHandled) return;
+
+      if (data.session) {
+        currentUser = data.session.user;
+        showDashboard(currentUser);
+      } else {
+        currentUser = null;
+        showLogin();
+      }
+
+    } catch (error) {
+      console.error("Session initialization failed:", error);
+
+      if (!recoveryMode && !recoveryHandled) {
+        showLogin("Unable to verify your session. Please sign in again.");
+      }
+    }
+  }
+
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY") {
+      recoveryMode = true;
+      recoveryHandled = true;
+      showReset("Enter and confirm your new password.");
+      return;
+    }
+
+    if (recoveryMode) return;
+
+    if (session) {
+      currentUser = session.user;
+      showDashboard(currentUser);
+    } else {
+      currentUser = null;
+      showLogin();
+    }
+  });
+
+  signOutButton.addEventListener("click", async () => {
+    signOutButton.disabled = true;
+    signOutButton.textContent = "Signing out...";
+
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) throw error;
+
+      recoveryMode = false;
+      recoveryHandled = false;
+      currentUser = null;
+
+      showLogin("You have signed out.");
+
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      alert("Sign out failed. Please try again.");
+
+    } finally {
+      signOutButton.disabled = false;
+      signOutButton.textContent = "Sign Out";
+    }
+  });
+
+  initializeAuth();
+})();
+</script>
+
+<script src="/customers.js"></script>
+<script src="/appointments.js"></script>
+
+</body>
+</html>
